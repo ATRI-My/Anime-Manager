@@ -32,7 +32,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveSettings: (settings: Settings) => ipcRenderer.invoke('save-settings', settings),
   
   // 工具打开API
-  openWithTool: (url: string, toolConfig: ToolConfig) => ipcRenderer.invoke('open-with-tool', url, toolConfig)
+  openWithTool: (url: string, toolConfig: ToolConfig) => ipcRenderer.invoke('open-with-tool', url, toolConfig),
+  
+  // 数据文件夹API
+  openDataFolder: () => ipcRenderer.invoke('open-data-folder')
 })
 
   // 为TypeScript提供类型声明
