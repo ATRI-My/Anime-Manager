@@ -138,7 +138,11 @@ const WritePage: React.FC = () => {
   const handleAddEpisode = () => {
     if (!selectedAnime) return;
     setEditingEpisode(null);
-    setIsEpisodeModalOpen(true);
+    // 使用setTimeout确保React完成状态更新后再打开模态框
+    // 这可以避免竞态条件和渲染问题
+    setTimeout(() => {
+      setIsEpisodeModalOpen(true);
+    }, 10);
   };
 
   const handleEditEpisode = (episodeId: string) => {
@@ -146,7 +150,11 @@ const WritePage: React.FC = () => {
     const episode = selectedAnime.episodes.find(ep => ep.id === episodeId);
     if (episode) {
       setEditingEpisode(episode);
-      setIsEpisodeModalOpen(true);
+      // 使用setTimeout确保React完成状态更新后再打开模态框
+      // 这可以避免竞态条件和渲染问题
+      setTimeout(() => {
+        setIsEpisodeModalOpen(true);
+      }, 10);
     }
   };
 

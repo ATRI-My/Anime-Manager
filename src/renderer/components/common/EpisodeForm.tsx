@@ -108,16 +108,17 @@ const EpisodeForm: React.FC<EpisodeFormProps> = ({
           <label htmlFor="number" className="block text-sm font-medium text-gray-700 mb-1">
             剧集编号 *
           </label>
-          <input
-            type="number"
-            id="number"
-            name="number"
-            value={formData.number}
-            onChange={handleChange}
-            min="1"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
+           <input
+             type="number"
+             id="number"
+             name="number"
+             value={formData.number}
+             onChange={handleChange}
+             min="1"
+             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+             required
+             autoFocus
+           />
           <p className="mt-1 text-sm text-gray-500">剧集的顺序编号，必须大于0</p>
         </div>
 
