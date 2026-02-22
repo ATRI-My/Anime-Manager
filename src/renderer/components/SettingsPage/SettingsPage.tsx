@@ -47,6 +47,17 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ className = '' }) => {
     }
   };
 
+  const handleOpenDataFolder = async () => {
+    try {
+      const result = await (window as any).electronAPI?.openDataFolder?.();
+      if (!result?.success) {
+        addToast('error', '打开文件夹失败', result?.error || '未知错误');
+      }
+    } catch (error) {
+      addToast('error', '打开文件夹失败', error instanceof Error ? error.message : '未知错误');
+    }
+  };
+
   if (loading) {
     return (
       <div className={`p-6 ${className}`}>
@@ -92,15 +103,23 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ className = '' }) => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  扫描路径
+                  数据文件位置
                 </label>
-                <input
-                  type="text"
-                  value="C:/Anime"
-                  readOnly
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
-                />
-                <p className="mt-1 text-sm text-gray-500">此功能暂未实现</p>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value="%APPDATA%\\anime-manager\\"
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                  />
+                  <button
+                    onClick={handleOpenDataFolder}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    打开文件夹
+                  </button>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">应用数据存储在此目录</p>
               </div>
 
               <div className="flex items-center">
