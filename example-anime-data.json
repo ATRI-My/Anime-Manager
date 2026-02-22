@@ -1,0 +1,189 @@
+{
+  "version": "1.0.0",
+  "animeList": [
+    {
+      "id": "anime-001",
+      "title": "咒术回战 第二季",
+      "watchMethod": "在线观看",
+      "description": "改编自芥见下下创作的漫画作品《咒术回战》。第二季包含「怀玉·玉折」和「涩谷事变」两个篇章。",
+      "tags": ["热血", "战斗", "奇幻", "校园"],
+      "episodes": [
+        {
+          "id": "ep-001",
+          "number": 1,
+          "title": "怀玉",
+          "url": "https://example.com/jujutsu-2/ep1",
+          "watched": true,
+          "notes": "五条悟和夏油杰的高专时期"
+        },
+        {
+          "id": "ep-002",
+          "number": 2,
+          "title": "玉折",
+          "url": "https://example.com/jujutsu-2/ep2",
+          "watched": true
+        },
+        {
+          "id": "ep-003",
+          "number": 3,
+          "title": "涩谷事变 开篇",
+          "url": "https://example.com/jujutsu-2/ep3",
+          "watched": false
+        }
+      ],
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-02-20T14:45:00Z"
+    },
+    {
+      "id": "anime-002",
+      "title": "葬送的芙莉莲",
+      "watchMethod": "本地播放器",
+      "description": "勇者一行人打倒魔王后，精灵魔法使芙莉莲在勇者去世后开始重新认识人类情感的故事。",
+      "tags": ["奇幻", "治愈", "冒险", "日常"],
+      "episodes": [
+        {
+          "id": "ep-101",
+          "number": 1,
+          "title": "冒险的结束",
+          "url": "file:///D:/Anime/Frieren/EP01.mp4",
+          "watched": true,
+          "notes": "勇者辛美尔去世"
+        },
+        {
+          "id": "ep-102",
+          "number": 2,
+          "title": "魔法",
+          "url": "file:///D:/Anime/Frieren/EP02.mp4",
+          "watched": true
+        },
+        {
+          "id": "ep-103",
+          "number": 3,
+          "title": "魔法使的国家",
+          "url": "file:///D:/Anime/Frieren/EP03.mp4",
+          "watched": false
+        },
+        {
+          "id": "ep-104",
+          "number": 4,
+          "title": "灵魂安眠之地",
+          "url": "file:///D:/Anime/Frieren/EP04.mp4",
+          "watched": false
+        }
+      ],
+      "createdAt": "2024-01-10T09:15:00Z",
+      "updatedAt": "2024-02-18T16:20:00Z"
+    },
+    {
+      "id": "anime-003",
+      "title": "间谍过家家",
+      "watchMethod": "下载观看",
+      "description": "西国一流间谍「黄昏」为了执行任务，组建了一个临时家庭，却不知道妻子是杀手，女儿有读心术。",
+      "tags": ["喜剧", "家庭", "动作", "日常"],
+      "episodes": [
+        {
+          "id": "ep-201",
+          "number": 1,
+          "title": "行动代号：〈枭〉",
+          "url": "magnet:?xt=urn:btih:example123",
+          "watched": true
+        },
+        {
+          "id": "ep-202",
+          "number": 2,
+          "title": "确保妻子",
+          "url": "magnet:?xt=urn:btih:example456",
+          "watched": true
+        },
+        {
+          "id": "ep-203",
+          "number": 3,
+          "title": "准备好孩子",
+          "url": "magnet:?xt=urn:btih:example789",
+          "watched": false
+        }
+      ],
+      "createdAt": "2024-01-05T11:00:00Z",
+      "updatedAt": "2024-02-15T13:30:00Z"
+    },
+    {
+      "id": "anime-004",
+      "title": "鬼灭之刃 游郭篇",
+      "watchMethod": "在线观看",
+      "description": "灶门炭治郎与音柱·宇髄天元一同前往游郭，与上弦之陆的妓夫太郎和堕姬展开激战。",
+      "tags": ["热血", "战斗", "奇幻", "历史"],
+      "episodes": [
+        {
+          "id": "ep-301",
+          "number": 1,
+          "title": "音柱·宇髄天元",
+          "url": "https://example.com/kimetsu-yoshiwara/ep1",
+          "watched": true
+        },
+        {
+          "id": "ep-302",
+          "number": 2,
+          "title": "潜入游郭",
+          "url": "https://example.com/kimetsu-yoshiwara/ep2",
+          "watched": true
+        },
+        {
+          "id": "ep-303",
+          "number": 3,
+          "title": "上弦集结",
+          "url": "https://example.com/kimetsu-yoshiwara/ep3",
+          "watched": true
+        },
+        {
+          "id": "ep-304",
+          "number": 4,
+          "title": "绝不放弃",
+          "url": "https://example.com/kimetsu-yoshiwara/ep4",
+          "watched": false
+        },
+        {
+          "id": "ep-305",
+          "number": 5,
+          "title": "超越极限",
+          "url": "https://example.com/kimetsu-yoshiwara/ep5",
+          "watched": false
+        }
+      ],
+      "createdAt": "2024-01-20T14:00:00Z",
+      "updatedAt": "2024-02-19T10:15:00Z"
+    },
+    {
+      "id": "anime-005",
+      "title": "孤独摇滚！",
+      "watchMethod": "本地播放器",
+      "description": "极度怕生的少女后藤一里加入「结束乐队」，与伙伴们一起追求音乐梦想的青春故事。",
+      "tags": ["音乐", "校园", "喜剧", "日常"],
+      "episodes": [
+        {
+          "id": "ep-401",
+          "number": 1,
+          "title": "转学生与吉他英雄",
+          "url": "file:///E:/Anime/Bocchi/EP01.mkv",
+          "watched": true,
+          "notes": "波奇酱的初次登场"
+        },
+        {
+          "id": "ep-402",
+          "number": 2,
+          "title": "乐队成员募集",
+          "url": "file:///E:/Anime/Bocchi/EP02.mkv",
+          "watched": true
+        },
+        {
+          "id": "ep-403",
+          "number": 3,
+          "title": "初次Live",
+          "url": "file:///E:/Anime/Bocchi/EP03.mkv",
+          "watched": false
+        }
+      ],
+      "createdAt": "2024-01-25T16:45:00Z",
+      "updatedAt": "2024-02-17T11:30:00Z"
+    }
+  ]
+}

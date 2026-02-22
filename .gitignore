@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+.npm
+.pnpm
+.yarn/
+.yarnrc
+
+# Build outputs
+dist/
+out/
+build/
+
+# Runtime data
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage/
+.nyc_output/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+test-reports/
+*.test.js
+*.test.ts
+
+# Electron-builder
+dist/win-unpacked/
+dist/mac/
+dist/linux/
+
+# Temporary files
+tmp/
+temp/
+
+# Logs
+logs/
+*.log
+
+# Package manager specific
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

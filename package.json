@@ -1,0 +1,81 @@
+{
+  "name": "anime-manager",
+  "version": "1.0.0",
+  "description": "动漫资源管理器桌面应用",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"electron .\"",
+    "build": "npx tsc -p tsconfig.main.json && vite build",
+    "preview": "vite preview",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "verify-build": "npm run build && echo 'Build verification passed'",
+    "dist:win": "npm run verify-build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.anime.manager",
+    "productName": "Anime Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**/*"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "dist/main/**",
+      "dist/shared/**",
+      "dist/assets/**",
+      "dist/index.html"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "sign": false,
+      "signAndEditExecutable": false,
+      "signDlls": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "keywords": [
+    "anime",
+    "electron",
+    "react",
+    "desktop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/react-window": "^1.8.8",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-window": "^2.2.7",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/uuid": "^9.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.0",
+    "concurrently": "^8.2.0",
+    "electron": "^25.0.0",
+    "electron-builder": "^24.0.0",
+    "electron-packager": "^17.1.2",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.4.0"
+  }
+}
