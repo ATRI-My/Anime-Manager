@@ -51,6 +51,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         getSettings: () => Promise<Settings>
         saveSettings: (settings: Settings) => Promise<{ success: boolean }>
         openWithTool: (url: string, toolConfig: ToolConfig) => Promise<{ success: boolean; error?: string }>
+        openDataFolder: () => Promise<{ success: boolean; error?: string }>
       }
     }
   }
