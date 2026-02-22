@@ -219,4 +219,16 @@ export function registerFileSystemHandlers(): void {
       return { canceled: true, filePath: '' }
     }
   })
+
+  ipcMain.handle('open-data-folder', async () => {
+    try {
+      const userDataPath = app.getPath('userData')
+      await shell.openPath(userDataPath)
+      return { success: true }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      console.error('打开数据文件夹失败:', error)
+      return { success: false, error: errorMessage }
+    }
+  })
 }
