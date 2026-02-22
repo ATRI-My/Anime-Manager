@@ -164,11 +164,9 @@ const WritePage: React.FC = () => {
           // 使用返回的updatedAnime更新选中状态
           if (result.updatedAnime) {
             setSelectedAnime(result.updatedAnime);
-          } else {
-            // 回退到从state.animeList查找
-            const updatedAnime = state.animeList.find(a => a.id === selectedAnime.id);
-            setSelectedAnime(updatedAnime || null);
           }
+          // 注意：如果result.updatedAnime不存在，不要设置selectedAnime为null
+          // 保持原值，避免selectedAnime意外变为null
         } else {
           addToast('error', '删除剧集失败', result.error || '未知错误');
         }
@@ -209,11 +207,9 @@ const WritePage: React.FC = () => {
         // 使用返回的updatedAnime更新选中状态
         if (result.updatedAnime) {
           setSelectedAnime(result.updatedAnime);
-        } else {
-          // 回退到从state.animeList查找
-          const updatedAnime = state.animeList.find(a => a.id === selectedAnime.id);
-          setSelectedAnime(updatedAnime || null);
         }
+        // 注意：如果result.updatedAnime不存在，不要设置selectedAnime为null
+        // 保持原值，避免selectedAnime意外变为null
         
         // 添加提示：修改已保存到内存，需要手动保存到文件
         toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
@@ -239,11 +235,9 @@ const WritePage: React.FC = () => {
         // 使用返回的updatedAnime更新选中状态
         if (result.updatedAnime) {
           setSelectedAnime(result.updatedAnime);
-        } else {
-          // 回退到从state.animeList查找
-          const updatedAnime = state.animeList.find(a => a.id === selectedAnime.id);
-          setSelectedAnime(updatedAnime || null);
         }
+        // 注意：如果result.updatedAnime不存在，不要设置selectedAnime为null
+        // 保持原值，避免selectedAnime意外变为null
         
         // 添加提示：修改已保存到内存，需要手动保存到文件
         toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
