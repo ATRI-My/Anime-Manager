@@ -214,13 +214,11 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
     const result = await saveToFile();
     
     // 保存成功后，更新内存中的数据源路径
-    if (result.success) {
-      // 这里可以触发数据刷新，确保查询页面使用最新数据
-      await reloadData();
-    }
+    // 注意：不需要调用reloadData()，因为saveToFile已经处理了状态更新
+    // 调用reloadData()会导致WritePage中的selectedAnime状态不一致
     
     return result;
-  }, [saveToFile, reloadData]);
+  }, [saveToFile]);
 
   const saveFile = useCallback(async () => {
     console.log('saveFile');
@@ -232,13 +230,11 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
     const result = await saveToFile(state.currentFilePath);
     
     // 保存成功后，更新内存中的数据源路径
-    if (result.success) {
-      // 这里可以触发数据刷新，确保查询页面使用最新数据
-      await reloadData();
-    }
+    // 注意：不需要调用reloadData()，因为saveToFile已经处理了状态更新
+    // 调用reloadData()会导致WritePage中的selectedAnime状态不一致
     
     return result;
-  }, [state.currentFilePath, saveAsFile, saveToFile, reloadData]);
+  }, [state.currentFilePath, saveAsFile, saveToFile]);
 
   // 动漫数据操作
   const addAnime = useCallback(async (animeData: Omit<Anime, 'id' | 'createdAt' | 'updatedAt'>) => {
