@@ -137,23 +137,13 @@ const WritePage: React.FC = () => {
 
   // 处理剧集操作
   const handleAddEpisode = () => {
-    if (!selectedAnime) {
+    if (!selectedAnimeId) {
       addToast('error', '无法添加剧集', '请先选择一个番剧');
       return;
     }
     
     setEditingEpisode(null);
-    
-    // 确保移除任何可能残留的焦点拦截器
-    const blocker = document.getElementById('focus-blocker');
-    if (blocker) {
-      blocker.remove();
-    }
-    
-    // 使用setTimeout确保状态更新完成后再打开模态框
-    setTimeout(() => {
-      setIsEpisodeModalOpen(true);
-    }, 10);
+    setIsEpisodeModalOpen(true);
   };
 
   const handleEditEpisode = (episodeId: string) => {
@@ -161,11 +151,7 @@ const WritePage: React.FC = () => {
     const episode = selectedAnime.episodes.find(ep => ep.id === episodeId);
     if (episode) {
       setEditingEpisode(episode);
-      
-      // 使用setTimeout确保状态更新完成后再打开模态框
-      setTimeout(() => {
-        setIsEpisodeModalOpen(true);
-      }, 10);
+      setIsEpisodeModalOpen(true);
     }
   };
 
