@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import FormValidation from './FormValidation';
 import useFormValidation from '../../hooks/useFormValidation';
-import { Episode } from '../../../shared/types';
 
 interface EpisodeFormData {
   number: number;
@@ -105,7 +104,116 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
   
   return (
     <form onSubmit={handleSubmit} className={`space-y-4 ${className}`}>
-      {/* 表单内容将在后续步骤添加 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            剧集编号 *
+          </label>
+          <input
+            type="number"
+            name="number"
+            value={formData.number}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            min="1"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            剧集标题 *
+          </label>
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            ref={titleInputRef}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="输入剧集标题"
+          />
+        </div>
+        
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1">
+            剧集链接 *
+          </label>
+          <input
+            type="url"
+            name="url"
+            value={formData.url}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="https://example.com/episode-1"
+          />
+        </div>
+        
+        <div>
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              name="watched"
+              checked={formData.watched}
+              onChange={handleChange}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium">已观看</span>
+          </label>
+        </div>
+        
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-1">
+            备注
+          </label>
+          <textarea
+            name="notes"
+            value={formData.notes}
+            onChange={handleChange}
+            rows={3}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="可选备注信息"
+          />
+        </div>
+      </div>
+      
+      {enableValidation && <FormValidation errors={errors} />}
+      
+      <div className="flex space-x-3 pt-4">
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          {isEditing ? '更新' : '添加'}
+        </button>
+        
+        <button
+          type="button"
+          onClick={handleReset}
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+        >
+          重置
+        </button>
+        
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            取消
+          </button>
+        )}
+        
+        {isEditing && onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          >
+            删除
+          </button>
+        )}
+      </div>
     </form>
   );
 };
