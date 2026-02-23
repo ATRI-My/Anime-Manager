@@ -209,10 +209,7 @@ const WritePage: React.FC = () => {
       }
       
       if (result.success) {
-        // 使用返回的updatedAnime更新选中状态
-        if (result.updatedAnime) {
-          setSelectedAnimeId(result.updatedAnime.id);
-        }
+        // 不再需要手动更新selectedAnime，依赖全局状态自动更新
         
         // 添加提示：修改已保存到内存，需要手动保存到文件
         toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
@@ -236,8 +233,7 @@ const WritePage: React.FC = () => {
       if (result.success) {
         addToast('success', '删除剧集', '剧集删除成功');
         
-        // 刷新界面状态，确保组件重新渲染
-        actions.refreshState();
+        // 不再需要手动刷新状态
         
         // 添加提示：修改已保存到内存，需要手动保存到文件
         toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
