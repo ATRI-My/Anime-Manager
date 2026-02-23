@@ -256,19 +256,7 @@ const WritePage: React.FC = () => {
     
     if (confirm(`确定要批量删除 ${episodeIds.length} 个剧集吗？`)) {
       try {
-        // 一次性删除所有选中的剧集
-        const updatedEpisodes = selectedAnime.episodes.filter(
-          episode => !episodeIds.includes(episode.id)
-        );
-        
-        const updatedAnime = {
-          ...selectedAnime,
-          episodes: updatedEpisodes,
-          updatedAt: new Date().toISOString(),
-        };
-        
-        // 直接更新selectedAnime状态
-        setSelectedAnimeId(updatedAnime.id);
+        // 不再需要手动更新selectedAnime，依赖全局状态自动更新
         
         // 更新全局状态 - 使用deleteEpisode逐个删除以确保一致性
         let allSuccess = true;
