@@ -101,12 +101,12 @@ const WritePage: React.FC = () => {
   const handleDeleteAnime = async (animeId: string) => {
     try {
       const result = await actions.deleteAnime(animeId);
-        if (result.success) {
-          addToast('success', '删除番剧', '番剧删除成功');
-          if (selectedAnime?.id === animeId) {
-            setSelectedAnimeId(null);
-          }
-        } else {
+      if (result.success) {
+        addToast('success', '删除番剧', '番剧删除成功');
+        if (selectedAnime?.id === animeId) {
+          setSelectedAnimeId(null);
+        }
+      } else {
         addToast('error', '删除番剧失败', result.error || '未知错误');
       }
     } catch (error) {
