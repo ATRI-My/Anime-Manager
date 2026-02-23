@@ -35,11 +35,11 @@ const WritePage: React.FC = () => {
   // 处理番剧操作
   const handleAddAnime = () => {
     setIsEditing(true);
-    setSelectedAnime(null);
+    setSelectedAnimeId(null);
   };
 
   const handleSelectAnime = (anime: Anime) => {
-    setSelectedAnime(anime);
+    setSelectedAnimeId(anime.id);
     setIsEditing(false);
   };
 
@@ -101,12 +101,12 @@ const WritePage: React.FC = () => {
   const handleDeleteAnime = async (animeId: string) => {
     try {
       const result = await actions.deleteAnime(animeId);
-      if (result.success) {
-        addToast('success', '删除番剧', '番剧删除成功');
-        if (selectedAnime?.id === animeId) {
-          setSelectedAnime(null);
-        }
-      } else {
+        if (result.success) {
+          addToast('success', '删除番剧', '番剧删除成功');
+          if (selectedAnime?.id === animeId) {
+            setSelectedAnimeId(null);
+          }
+        } else {
         addToast('error', '删除番剧失败', result.error || '未知错误');
       }
     } catch (error) {
@@ -117,7 +117,7 @@ const WritePage: React.FC = () => {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setSelectedAnime(null);
+    setSelectedAnimeId(null);
   };
 
   // 保存文件处理函数
@@ -184,7 +184,7 @@ const WritePage: React.FC = () => {
           
           // 直接更新selectedAnime状态，避免不必要的全局刷新
           if (result.updatedAnime) {
-            setSelectedAnime(result.updatedAnime);
+            setSelectedAnimeId(result.updatedAnime.id);
           }
           
           // 关键修复：清除任何可能残留的焦点
@@ -235,7 +235,7 @@ const WritePage: React.FC = () => {
       if (result.success) {
         // 使用返回的updatedAnime更新选中状态
         if (result.updatedAnime) {
-          setSelectedAnime(result.updatedAnime);
+          setSelectedAnimeId(result.updatedAnime.id);
         }
         
         // 添加提示：修改已保存到内存，需要手动保存到文件
@@ -296,7 +296,7 @@ const WritePage: React.FC = () => {
         };
         
         // 直接更新selectedAnime状态
-        setSelectedAnime(updatedAnime);
+        setSelectedAnimeId(updatedAnime.id);
         
         // 更新全局状态 - 使用deleteEpisode逐个删除以确保一致性
         let allSuccess = true;
@@ -346,11 +346,11 @@ const WritePage: React.FC = () => {
       // 从全局状态中查找最新的anime数据
       const currentAnime = state.animeList.find(a => a.id === selectedAnime.id);
       if (currentAnime && JSON.stringify(currentAnime) !== JSON.stringify(selectedAnime)) {
-        setSelectedAnime(currentAnime);
+        setSelectedAnimeId(currentAnime.id);
       } else if (!currentAnime) {
         // 如果selectedAnime指向的动漫在全局状态中不存在，重置为null
         // 这通常发生在打开新文件时
-        setSelectedAnime(null);
+        setSelectedAnimeId(null);
       }
     }
   }, [state.animeList]); // 只依赖state.animeList，不依赖selectedAnime
@@ -363,7 +363,7 @@ const WritePage: React.FC = () => {
       if (selectedAnime) {
         const existsInNewFile = state.animeList.some(a => a.id === selectedAnime.id);
         if (!existsInNewFile) {
-          setSelectedAnime(null);
+          setSelectedAnimeId(null);
         }
       }
     }
