@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FileOperations from '../common/FileOperations';
 import AnimeForm from '../common/AnimeForm';
 import EpisodeTable from '../common/EpisodeTable';
@@ -21,7 +21,8 @@ interface AnimeFormData {
 const WritePage: React.FC = () => {
   const { state, actions } = useAppDataContext();
   const { addToast } = useToast();
-  const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
+  const [selectedAnimeId, setSelectedAnimeId] = useState<string | null>(null);
+  const selectedAnime = state.animeList.find(a => a.id === selectedAnimeId);
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
@@ -136,10 +137,20 @@ const WritePage: React.FC = () => {
 
   // 处理剧集操作
   const handleAddEpisode = () => {
-    if (!selectedAnime) return;
+    if (!selectedAnime) {
+      addToast('error', '无法添加剧集', '请先选择一个番剧');
+      return;
+    }
+    
     setEditingEpisode(null);
-    // 使用setTimeout确保React完成状态更新后再打开模态框
-    // 这可以避免竞态条件和渲染问题
+    
+    // 确保移除任何可能残留的焦点拦截器
+    const blocker = document.getElementById('focus-blocker');
+    if (blocker) {
+      blocker.remove();
+    }
+    
+    // 使用setTimeout确保状态更新完成后再打开模态框
     setTimeout(() => {
       setIsEpisodeModalOpen(true);
     }, 10);
@@ -150,8 +161,8 @@ const WritePage: React.FC = () => {
     const episode = selectedAnime.episodes.find(ep => ep.id === episodeId);
     if (episode) {
       setEditingEpisode(episode);
-      // 使用setTimeout确保React完成状态更新后再打开模态框
-      // 这可以避免竞态条件和渲染问题
+      
+      // 使用setTimeout确保状态更新完成后再打开模态框
       setTimeout(() => {
         setIsEpisodeModalOpen(true);
       }, 10);
@@ -167,14 +178,24 @@ const WritePage: React.FC = () => {
     if (confirm(`确定要删除剧集 "${episode.title}" 吗？`)) {
       try {
         const result = await actions.deleteEpisode(selectedAnime.id, episodeId);
+        
         if (result.success) {
           addToast('success', '删除剧集', '剧集删除成功');
-          // 使用返回的updatedAnime更新选中状态
+          
+          // 直接更新selectedAnime状态，避免不必要的全局刷新
           if (result.updatedAnime) {
             setSelectedAnime(result.updatedAnime);
           }
-          // 注意：如果result.updatedAnime不存在，不要设置selectedAnime为null
-          // 保持原值，避免selectedAnime意外变为null
+          
+          // 关键修复：清除任何可能残留的焦点
+          setTimeout(() => {
+            // 清除文档焦点
+            if (document.activeElement && document.activeElement !== document.body) {
+              (document.activeElement as HTMLElement).blur();
+            }
+            // 确保body获得焦点
+            document.body.focus();
+          }, 10);
         } else {
           addToast('error', '删除剧集失败', result.error || '未知错误');
         }
@@ -216,8 +237,6 @@ const WritePage: React.FC = () => {
         if (result.updatedAnime) {
           setSelectedAnime(result.updatedAnime);
         }
-        // 注意：如果result.updatedAnime不存在，不要设置selectedAnime为null
-        // 保持原值，避免selectedAnime意外变为null
         
         // 添加提示：修改已保存到内存，需要手动保存到文件
         toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
@@ -240,12 +259,9 @@ const WritePage: React.FC = () => {
       const result = await actions.deleteEpisode(selectedAnime.id, editingEpisode.id);
       if (result.success) {
         addToast('success', '删除剧集', '剧集删除成功');
-        // 使用返回的updatedAnime更新选中状态
-        if (result.updatedAnime) {
-          setSelectedAnime(result.updatedAnime);
-        }
-        // 注意：如果result.updatedAnime不存在，不要设置selectedAnime为null
-        // 保持原值，避免selectedAnime意外变为null
+        
+        // 刷新界面状态，确保组件重新渲染
+        actions.refreshState();
         
         // 添加提示：修改已保存到内存，需要手动保存到文件
         toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
@@ -262,11 +278,96 @@ const WritePage: React.FC = () => {
     }
   };
 
+  // 处理批量删除剧集
+  const handleBulkDeleteEpisodes = async (episodeIds: string[]) => {
+    if (!selectedAnime || episodeIds.length === 0) return;
+    
+    if (confirm(`确定要批量删除 ${episodeIds.length} 个剧集吗？`)) {
+      try {
+        // 一次性删除所有选中的剧集
+        const updatedEpisodes = selectedAnime.episodes.filter(
+          episode => !episodeIds.includes(episode.id)
+        );
+        
+        const updatedAnime = {
+          ...selectedAnime,
+          episodes: updatedEpisodes,
+          updatedAt: new Date().toISOString(),
+        };
+        
+        // 直接更新selectedAnime状态
+        setSelectedAnime(updatedAnime);
+        
+        // 更新全局状态 - 使用deleteEpisode逐个删除以确保一致性
+        let allSuccess = true;
+        for (const episodeId of episodeIds) {
+          const result = await actions.deleteEpisode(selectedAnime.id, episodeId);
+          if (!result.success) {
+            allSuccess = false;
+            console.error(`删除剧集 ${episodeId} 失败:`, result.error);
+          }
+        }
+        
+        if (allSuccess) {
+          addToast('success', '批量删除剧集', `成功删除 ${episodeIds.length} 个剧集`);
+          
+          // 关键修复：清除任何可能残留的焦点
+          setTimeout(() => {
+            // 清除文档焦点
+            if (document.activeElement && document.activeElement !== document.body) {
+              (document.activeElement as HTMLElement).blur();
+            }
+            // 确保body获得焦点
+            document.body.focus();
+          }, 10);
+          
+          // 添加提示：修改已保存到内存，需要手动保存到文件
+          toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
+        } else {
+          addToast('error', '批量删除剧集失败', '部分剧集删除失败，请检查');
+        }
+      } catch (error) {
+        console.error('批量删除剧集失败:', error);
+        addToast('error', '批量删除剧集失败', error instanceof Error ? error.message : '未知错误');
+      }
+    }
+  };
+
   // 关闭剧集模态框
   const handleCloseEpisodeModal = () => {
     setIsEpisodeModalOpen(false);
     setEditingEpisode(null);
   };
+
+  // 同步selectedAnime和全局状态
+  // 同步selectedAnime和全局状态
+  useEffect(() => {
+    if (selectedAnime) {
+      // 从全局状态中查找最新的anime数据
+      const currentAnime = state.animeList.find(a => a.id === selectedAnime.id);
+      if (currentAnime && JSON.stringify(currentAnime) !== JSON.stringify(selectedAnime)) {
+        setSelectedAnime(currentAnime);
+      } else if (!currentAnime) {
+        // 如果selectedAnime指向的动漫在全局状态中不存在，重置为null
+        // 这通常发生在打开新文件时
+        setSelectedAnime(null);
+      }
+    }
+  }, [state.animeList]); // 只依赖state.animeList，不依赖selectedAnime
+
+  // 当打开新文件时，重置selectedAnime
+  useEffect(() => {
+    // 当currentFilePath变化时（打开新文件），重置selectedAnime
+    if (state.currentFilePath) {
+      // 如果当前有选中的动漫，检查它是否存在于新文件中
+      if (selectedAnime) {
+        const existsInNewFile = state.animeList.some(a => a.id === selectedAnime.id);
+        if (!existsInNewFile) {
+          setSelectedAnime(null);
+        }
+      }
+    }
+  }, [state.currentFilePath]); // 依赖currentFilePath
 
   // 页面切换保护
   useUnsavedChangesGuard({
@@ -370,6 +471,7 @@ const WritePage: React.FC = () => {
                 onAddEpisode={handleAddEpisode}
                 onEditEpisode={handleEditEpisode}
                 onDeleteEpisode={handleDeleteEpisode}
+                onBulkDeleteEpisodes={handleBulkDeleteEpisodes}
               />
             </div>
           )}
