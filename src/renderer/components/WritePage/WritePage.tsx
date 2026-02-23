@@ -289,35 +289,16 @@ const WritePage: React.FC = () => {
     setEditingEpisode(null);
   };
 
-  // 同步selectedAnime和全局状态
-  // 同步selectedAnime和全局状态
+  // 当打开新文件时，重置selectedAnimeId
   useEffect(() => {
-    if (selectedAnime) {
-      // 从全局状态中查找最新的anime数据
-      const currentAnime = state.animeList.find(a => a.id === selectedAnime.id);
-      if (currentAnime && JSON.stringify(currentAnime) !== JSON.stringify(selectedAnime)) {
-        setSelectedAnimeId(currentAnime.id);
-      } else if (!currentAnime) {
-        // 如果selectedAnime指向的动漫在全局状态中不存在，重置为null
-        // 这通常发生在打开新文件时
+    if (state.currentFilePath && selectedAnimeId) {
+      // 检查选中的动漫是否存在于新文件中
+      const existsInNewFile = state.animeList.some(a => a.id === selectedAnimeId);
+      if (!existsInNewFile) {
         setSelectedAnimeId(null);
       }
     }
-  }, [state.animeList]); // 只依赖state.animeList，不依赖selectedAnime
-
-  // 当打开新文件时，重置selectedAnime
-  useEffect(() => {
-    // 当currentFilePath变化时（打开新文件），重置selectedAnime
-    if (state.currentFilePath) {
-      // 如果当前有选中的动漫，检查它是否存在于新文件中
-      if (selectedAnime) {
-        const existsInNewFile = state.animeList.some(a => a.id === selectedAnime.id);
-        if (!existsInNewFile) {
-          setSelectedAnimeId(null);
-        }
-      }
-    }
-  }, [state.currentFilePath]); // 依赖currentFilePath
+  }, [state.currentFilePath, state.animeList, selectedAnimeId]);
 
   // 页面切换保护
   useUnsavedChangesGuard({
