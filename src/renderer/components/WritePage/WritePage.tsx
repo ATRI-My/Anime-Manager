@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import FileOperations from '../common/FileOperations';
 import AnimeForm from '../common/AnimeForm';
 import EpisodeTable from '../common/EpisodeTable';
@@ -22,7 +22,9 @@ const WritePage: React.FC = () => {
   const { state, actions } = useAppDataContext();
   const { addToast } = useToast();
   const [selectedAnimeId, setSelectedAnimeId] = useState<string | null>(null);
-  const selectedAnime = state.animeList.find(a => a.id === selectedAnimeId);
+  const selectedAnime = useMemo(() => {
+    return state.animeList.find(a => a.id === selectedAnimeId);
+  }, [state.animeList, selectedAnimeId]);
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
@@ -137,13 +139,25 @@ const WritePage: React.FC = () => {
 
   // 处理剧集操作
   const handleAddEpisode = () => {
-    if (!selectedAnimeId) {
-      addToast('error', '无法添加剧集', '请先选择一个番剧');
-      return;
+    try {
+      if (!selectedAnimeId) {
+        addToast('error', '无法添加剧集', '请先选择一个番剧');
+        return;
+      }
+      
+      // 验证选中的动漫是否存在
+      if (!selectedAnime) {
+        addToast('error', '无法添加剧集', '选中的番剧不存在或已被删除');
+        setSelectedAnimeId(null);
+        return;
+      }
+      
+      setEditingEpisode(null);
+      setIsEpisodeModalOpen(true);
+    } catch (error) {
+      console.error('打开添加剧集模态框失败:', error);
+      addToast('error', '系统错误', '无法打开添加剧集界面');
     }
-    
-    setEditingEpisode(null);
-    setIsEpisodeModalOpen(true);
   };
 
   const handleEditEpisode = (episodeId: string) => {
