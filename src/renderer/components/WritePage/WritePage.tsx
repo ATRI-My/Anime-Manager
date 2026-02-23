@@ -70,9 +70,9 @@ const WritePage: React.FC = () => {
     }
     
     try {
-      if (selectedAnime) {
+      if (selectedAnimeId) {
         // 更新现有番剧
-        const result = await actions.updateAnime(selectedAnime.id, formData);
+        const result = await actions.updateAnime(selectedAnimeId, formData);
         if (result.success) {
           addToast('success', '更新番剧', '番剧信息更新成功');
         } else {
@@ -103,7 +103,7 @@ const WritePage: React.FC = () => {
       const result = await actions.deleteAnime(animeId);
       if (result.success) {
         addToast('success', '删除番剧', '番剧删除成功');
-        if (selectedAnime?.id === animeId) {
+        if (selectedAnimeId === animeId) {
           setSelectedAnimeId(null);
         }
       } else {
@@ -147,8 +147,8 @@ const WritePage: React.FC = () => {
   };
 
   const handleEditEpisode = (episodeId: string) => {
-    if (!selectedAnime) return;
-    const episode = selectedAnime.episodes.find(ep => ep.id === episodeId);
+    if (!selectedAnimeId) return;
+    const episode = selectedAnime?.episodes.find(ep => ep.id === episodeId);
     if (episode) {
       setEditingEpisode(episode);
       setIsEpisodeModalOpen(true);
@@ -156,14 +156,14 @@ const WritePage: React.FC = () => {
   };
 
   const handleDeleteEpisode = async (episodeId: string) => {
-    if (!selectedAnime) return;
+    if (!selectedAnimeId) return;
     
-    const episode = selectedAnime.episodes.find(ep => ep.id === episodeId);
+    const episode = selectedAnime?.episodes.find(ep => ep.id === episodeId);
     if (!episode) return;
     
     if (confirm(`确定要删除剧集 "${episode.title}" 吗？`)) {
       try {
-        const result = await actions.deleteEpisode(selectedAnime.id, episodeId);
+        const result = await actions.deleteEpisode(selectedAnimeId, episodeId);
         
         if (result.success) {
           addToast('success', '删除剧集', '剧集删除成功');
@@ -186,13 +186,13 @@ const WritePage: React.FC = () => {
 
   // 处理剧集表单提交
   const handleEpisodeSubmit = async (episodeData: any) => {
-    if (!selectedAnime) return;
+    if (!selectedAnimeId) return;
     
     try {
       let result;
       if (editingEpisode) {
         // 更新现有剧集
-        result = await actions.updateEpisode(selectedAnime.id, editingEpisode.id, episodeData);
+        result = await actions.updateEpisode(selectedAnimeId, editingEpisode.id, episodeData);
         if (result.success) {
           addToast('success', '更新剧集', '剧集信息更新成功');
         } else {
@@ -200,7 +200,7 @@ const WritePage: React.FC = () => {
         }
       } else {
         // 添加新剧集
-        result = await actions.addEpisode(selectedAnime.id, episodeData);
+        result = await actions.addEpisode(selectedAnimeId, episodeData);
         if (result.success) {
           addToast('success', '添加剧集', `剧集 "${episodeData.title}" 添加成功`);
         } else {
@@ -226,10 +226,10 @@ const WritePage: React.FC = () => {
 
   // 处理剧集删除（从模态框）
   const handleEpisodeDelete = async () => {
-    if (!selectedAnime || !editingEpisode) return;
+    if (!selectedAnimeId || !editingEpisode) return;
     
     try {
-      const result = await actions.deleteEpisode(selectedAnime.id, editingEpisode.id);
+      const result = await actions.deleteEpisode(selectedAnimeId, editingEpisode.id);
       if (result.success) {
         addToast('success', '删除剧集', '剧集删除成功');
         
@@ -252,7 +252,7 @@ const WritePage: React.FC = () => {
 
   // 处理批量删除剧集
   const handleBulkDeleteEpisodes = async (episodeIds: string[]) => {
-    if (!selectedAnime || episodeIds.length === 0) return;
+    if (!selectedAnimeId || episodeIds.length === 0) return;
     
     if (confirm(`确定要批量删除 ${episodeIds.length} 个剧集吗？`)) {
       try {
@@ -261,7 +261,7 @@ const WritePage: React.FC = () => {
         // 更新全局状态 - 使用deleteEpisode逐个删除以确保一致性
         let allSuccess = true;
         for (const episodeId of episodeIds) {
-          const result = await actions.deleteEpisode(selectedAnime.id, episodeId);
+          const result = await actions.deleteEpisode(selectedAnimeId, episodeId);
           if (!result.success) {
             allSuccess = false;
             console.error(`删除剧集 ${episodeId} 失败:`, result.error);
@@ -345,10 +345,10 @@ const WritePage: React.FC = () => {
               ) : (
                 <ul className="divide-y divide-gray-200">
                   {state.animeList.map((anime) => (
-                    <li
+                     <li
                       key={anime.id}
                       className={`p-3 cursor-pointer hover:bg-gray-50 ${
-                        selectedAnime?.id === anime.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                        selectedAnimeId === anime.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
                       }`}
                       onClick={() => handleSelectAnime(anime)}
                     >
@@ -368,9 +368,9 @@ const WritePage: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* 番剧表单 */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              {isEditing ? '添加新番剧' : selectedAnime ? '编辑番剧' : '选择或添加番剧'}
-            </h3>
+             <h3 className="text-xl font-semibold text-gray-800 mb-4">
+               {isEditing ? '添加新番剧' : selectedAnimeId ? '编辑番剧' : '选择或添加番剧'}
+             </h3>
             
             {/* 显示WritePage层面的验证错误 */}
             {validationErrors.length > 0 && (
@@ -384,7 +384,7 @@ const WritePage: React.FC = () => {
                 onSubmit={handleSaveAnime}
                 initialData={selectedAnime || { __isNew: true }}
                 onCancel={handleCancelEdit}
-                onDelete={selectedAnime ? () => handleDeleteAnime(selectedAnime.id) : undefined}
+                 onDelete={selectedAnimeId ? () => handleDeleteAnime(selectedAnimeId) : undefined}
               />
             ) : (
               <div className="text-center py-8 text-gray-500">
@@ -393,8 +393,8 @@ const WritePage: React.FC = () => {
             )}
           </div>
 
-          {/* 剧集表格 */}
-          {selectedAnime && (
+           {/* 剧集表格 */}
+          {selectedAnimeId && selectedAnime && (
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">剧集管理</h3>
               <EpisodeTable
