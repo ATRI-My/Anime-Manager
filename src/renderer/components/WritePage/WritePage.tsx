@@ -172,16 +172,6 @@ const WritePage: React.FC = () => {
           if (result.updatedAnime) {
             setSelectedAnimeId(result.updatedAnime.id);
           }
-          
-          // 关键修复：清除任何可能残留的焦点
-          setTimeout(() => {
-            // 清除文档焦点
-            if (document.activeElement && document.activeElement !== document.body) {
-              (document.activeElement as HTMLElement).blur();
-            }
-            // 确保body获得焦点
-            document.body.focus();
-          }, 10);
         } else {
           addToast('error', '删除剧集失败', result.error || '未知错误');
         }
@@ -296,16 +286,6 @@ const WritePage: React.FC = () => {
         
         if (allSuccess) {
           addToast('success', '批量删除剧集', `成功删除 ${episodeIds.length} 个剧集`);
-          
-          // 关键修复：清除任何可能残留的焦点
-          setTimeout(() => {
-            // 清除文档焦点
-            if (document.activeElement && document.activeElement !== document.body) {
-              (document.activeElement as HTMLElement).blur();
-            }
-            // 确保body获得焦点
-            document.body.focus();
-          }, 10);
           
           // 添加提示：修改已保存到内存，需要手动保存到文件
           toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
