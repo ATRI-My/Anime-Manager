@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Episode as SharedEpisode } from '../../../shared/types';
+import type { EpisodeFormData } from './InlineEpisodeForm';
 
 interface EpisodeTableProps {
   episodes: SharedEpisode[];
-  onAddEpisode: () => void;
-  onEditEpisode: (episodeId: string) => void;
+  onAddEpisode: (formData: EpisodeFormData) => void;
+  onEditEpisode: (episodeId: string, formData: EpisodeFormData) => void;
   onDeleteEpisode: (episodeId: string) => void;
+  onBulkDeleteEpisodes?: (episodeIds: string[]) => void;
   className?: string;
 }
 
@@ -14,10 +16,14 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
   onAddEpisode,
   onEditEpisode,
   onDeleteEpisode,
+  onBulkDeleteEpisodes,
   className = ''
 }) => {
   const [selectedEpisodes, setSelectedEpisodes] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [showInlineForm, setShowInlineForm] = useState(false);
+  const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
 
   const handleSelectEpisode = (episodeId: string) => {
     if (selectedEpisodes.includes(episodeId)) {
@@ -42,7 +48,13 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
       return;
     }
     if (confirm(`确定要删除选中的 ${selectedEpisodes.length} 个剧集吗？`)) {
-      selectedEpisodes.forEach(id => onDeleteEpisode(id));
+      if (onBulkDeleteEpisodes) {
+        // 使用批量删除函数
+        onBulkDeleteEpisodes(selectedEpisodes);
+      } else {
+        // 回退到逐个删除
+        selectedEpisodes.forEach(id => onDeleteEpisode(id));
+      }
       setSelectedEpisodes([]);
       setSelectAll(false);
     }
@@ -136,12 +148,18 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => onEditEpisode(episode.id)}
-                    className="text-blue-600 hover:text-blue-900 mr-4"
-                  >
-                    编辑
-                  </button>
+                   <button
+                     onClick={() => onEditEpisode(episode.id, {
+                       number: episode.number,
+                       title: episode.title,
+                       url: episode.url,
+                       watched: episode.watched,
+                       notes: episode.notes || ''
+                     })}
+                     className="text-blue-600 hover:text-blue-900 mr-4"
+                   >
+                     编辑
+                   </button>
                   <button
                     onClick={() => onDeleteEpisode(episode.id)}
                     className="text-red-600 hover:text-red-900"
@@ -170,12 +188,18 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
           已选择 {selectedEpisodes.length} 个剧集
         </div>
         <div className="flex space-x-3">
-          <button
-            onClick={onAddEpisode}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            添加新行
-          </button>
+           <button
+             onClick={() => onAddEpisode({
+               number: episodes.length > 0 ? Math.max(...episodes.map(ep => ep.number)) + 1 : 1,
+               title: '',
+               url: '',
+               watched: false,
+               notes: ''
+             })}
+             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+           >
+             添加新行
+           </button>
         </div>
       </div>
     </div>
