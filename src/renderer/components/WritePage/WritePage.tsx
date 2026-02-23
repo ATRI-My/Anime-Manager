@@ -2,12 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import FileOperations from '../common/FileOperations';
 import AnimeForm from '../common/AnimeForm';
 import EpisodeTable from '../common/EpisodeTable';
-import EpisodeModal from '../common/EpisodeModal';
 import FormValidation from '../common/FormValidation';
 import { UnsavedChangesBanner } from '../common';
 import { useAppDataContext, useToast, useUnsavedChangesGuard } from '../../hooks';
-import { Anime, Episode } from '../../../shared/types';
+import { Anime } from '../../../shared/types';
 import { validateAnime } from '../../../shared/validation';
+import type { EpisodeFormData } from '../common/InlineEpisodeForm';
 import toast from '../../utils/toast';
 
 interface AnimeFormData {
@@ -27,10 +27,6 @@ const WritePage: React.FC = () => {
   }, [state.animeList, selectedAnimeId]);
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  
-  // 剧集编辑相关状态
-  const [isEpisodeModalOpen, setIsEpisodeModalOpen] = useState(false);
-  const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null);
 
   // 处理文件操作 - 通过 FileOperations 组件处理
 
@@ -137,8 +133,8 @@ const WritePage: React.FC = () => {
     }
   };
 
-  // 处理剧集操作
-  const handleAddEpisode = () => {
+  // 处理剧集操作 - 内联表单版本
+  const handleAddEpisode = async (formData: EpisodeFormData) => {
     try {
       if (!selectedAnimeId) {
         addToast('error', '无法添加剧集', '请先选择一个番剧');
@@ -152,20 +148,35 @@ const WritePage: React.FC = () => {
         return;
       }
       
-      setEditingEpisode(null);
-      setIsEpisodeModalOpen(true);
+      // 直接添加剧集，不再打开模态框
+      const result = await actions.addEpisode(selectedAnimeId, formData);
+      if (result.success) {
+        addToast('success', '添加剧集', `剧集 "${formData.title}" 添加成功`);
+        toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
+      } else {
+        addToast('error', '添加剧集失败', result.error || '未知错误');
+      }
     } catch (error) {
-      console.error('打开添加剧集模态框失败:', error);
-      addToast('error', '系统错误', '无法打开添加剧集界面');
+      console.error('添加剧集失败:', error);
+      addToast('error', '添加剧集失败', error instanceof Error ? error.message : '未知错误');
     }
   };
 
-  const handleEditEpisode = (episodeId: string) => {
+  const handleEditEpisode = async (episodeId: string, formData: EpisodeFormData) => {
     if (!selectedAnimeId) return;
-    const episode = selectedAnime?.episodes.find(ep => ep.id === episodeId);
-    if (episode) {
-      setEditingEpisode(episode);
-      setIsEpisodeModalOpen(true);
+    
+    try {
+      // 直接更新剧集，不再打开模态框
+      const result = await actions.updateEpisode(selectedAnimeId, episodeId, formData);
+      if (result.success) {
+        addToast('success', '更新剧集', '剧集信息更新成功');
+        toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
+      } else {
+        addToast('error', '更新剧集失败', result.error || '未知错误');
+      }
+    } catch (error) {
+      console.error('更新剧集失败:', error);
+      addToast('error', '更新剧集失败', error instanceof Error ? error.message : '未知错误');
     }
   };
 
@@ -198,71 +209,6 @@ const WritePage: React.FC = () => {
 
 
 
-  // 处理剧集表单提交
-  const handleEpisodeSubmit = async (episodeData: any) => {
-    if (!selectedAnimeId) return;
-    
-    try {
-      let result;
-      if (editingEpisode) {
-        // 更新现有剧集
-        result = await actions.updateEpisode(selectedAnimeId, editingEpisode.id, episodeData);
-        if (result.success) {
-          addToast('success', '更新剧集', '剧集信息更新成功');
-        } else {
-          addToast('error', '更新剧集失败', result.error || '未知错误');
-        }
-      } else {
-        // 添加新剧集
-        result = await actions.addEpisode(selectedAnimeId, episodeData);
-        if (result.success) {
-          addToast('success', '添加剧集', `剧集 "${episodeData.title}" 添加成功`);
-        } else {
-          addToast('error', '添加剧集失败', result.error || '未知错误');
-        }
-      }
-      
-      if (result.success) {
-        // 不再需要手动更新selectedAnime，依赖全局状态自动更新
-        
-        // 添加提示：修改已保存到内存，需要手动保存到文件
-        toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
-        
-        // 关闭模态框
-        setIsEpisodeModalOpen(false);
-        setEditingEpisode(null);
-      }
-    } catch (error) {
-      console.error('保存剧集失败:', error);
-      addToast('error', '保存剧集失败', error instanceof Error ? error.message : '未知错误');
-    }
-  };
-
-  // 处理剧集删除（从模态框）
-  const handleEpisodeDelete = async () => {
-    if (!selectedAnimeId || !editingEpisode) return;
-    
-    try {
-      const result = await actions.deleteEpisode(selectedAnimeId, editingEpisode.id);
-      if (result.success) {
-        addToast('success', '删除剧集', '剧集删除成功');
-        
-        // 不再需要手动刷新状态
-        
-        // 添加提示：修改已保存到内存，需要手动保存到文件
-        toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
-        
-        // 关闭模态框
-        setIsEpisodeModalOpen(false);
-        setEditingEpisode(null);
-      } else {
-        addToast('error', '删除剧集失败', result.error || '未知错误');
-      }
-    } catch (error) {
-      console.error('删除剧集失败:', error);
-      addToast('error', '删除剧集失败', error instanceof Error ? error.message : '未知错误');
-    }
-  };
 
   // 处理批量删除剧集
   const handleBulkDeleteEpisodes = async (episodeIds: string[]) => {
@@ -297,11 +243,7 @@ const WritePage: React.FC = () => {
     }
   };
 
-  // 关闭剧集模态框
-  const handleCloseEpisodeModal = () => {
-    setIsEpisodeModalOpen(false);
-    setEditingEpisode(null);
-  };
+
 
   // 当打开新文件时，重置selectedAnimeId
   useEffect(() => {
@@ -423,15 +365,7 @@ const WritePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 剧集编辑模态框 */}
-      <EpisodeModal
-        isOpen={isEpisodeModalOpen}
-        onClose={handleCloseEpisodeModal}
-        onSubmit={handleEpisodeSubmit}
-        episode={editingEpisode}
-        animeTitle={selectedAnime?.title}
-        onDelete={editingEpisode ? handleEpisodeDelete : undefined}
-      />
+
     </div>
   );
 };

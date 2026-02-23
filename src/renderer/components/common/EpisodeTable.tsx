@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Episode as SharedEpisode } from '../../../shared/types';
 import type { EpisodeFormData } from './InlineEpisodeForm';
+import InlineEpisodeForm from './InlineEpisodeForm';
 
 interface EpisodeTableProps {
   episodes: SharedEpisode[];
@@ -60,8 +61,89 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
     }
   };
 
+  // 内联表单事件处理
+  const handleAddNew = () => {
+    setShowInlineForm(true);
+    setIsAddingNew(true);
+    setEditingEpisodeId(null);
+  };
+
+  const handleEdit = (episodeId: string) => {
+    setShowInlineForm(true);
+    setEditingEpisodeId(episodeId);
+    setIsAddingNew(false);
+  };
+
+  const handleFormSubmit = (formData: EpisodeFormData) => {
+    if (editingEpisodeId) {
+      onEditEpisode(editingEpisodeId, formData);
+    } else {
+      onAddEpisode(formData);
+    }
+    setShowInlineForm(false);
+    setEditingEpisodeId(null);
+    setIsAddingNew(false);
+  };
+
+  const handleFormCancel = () => {
+    setShowInlineForm(false);
+    setEditingEpisodeId(null);
+    setIsAddingNew(false);
+  };
+
+  const handleFormDelete = () => {
+    if (editingEpisodeId) {
+      onDeleteEpisode(editingEpisodeId);
+      setShowInlineForm(false);
+      setEditingEpisodeId(null);
+      setIsAddingNew(false);
+    }
+  };
+
+  // 获取编辑剧集的初始数据
+  const getEditingEpisodeData = () => {
+    if (!editingEpisodeId) return undefined;
+    const episode = episodes.find(ep => ep.id === editingEpisodeId);
+    if (!episode) return undefined;
+    
+    return {
+      number: episode.number,
+      title: episode.title,
+      url: episode.url,
+      watched: episode.watched,
+      notes: episode.notes || ''
+    };
+  };
+
   return (
     <div className={`${className}`}>
+      {/* 内联表单区域 */}
+      {showInlineForm && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-medium text-gray-800 mb-4">
+            {isAddingNew ? '添加新剧集' : '编辑剧集'}
+          </h3>
+          <InlineEpisodeForm
+            onSubmit={handleFormSubmit}
+            initialData={
+              isAddingNew 
+                ? {
+                    number: episodes.length > 0 ? Math.max(...episodes.map(ep => ep.number)) + 1 : 1,
+                    title: '',
+                    url: '',
+                    watched: false,
+                    notes: ''
+                  }
+                : getEditingEpisodeData()
+            }
+            onCancel={handleFormCancel}
+            onDelete={editingEpisodeId ? handleFormDelete : undefined}
+            isEditing={!!editingEpisodeId}
+            enableValidation={true}
+          />
+        </div>
+      )}
+      
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
@@ -147,26 +229,20 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
                     {episode.watched ? '已观看' : '未观看'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button
+                      onClick={() => handleEdit(episode.id)}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                    >
+                      编辑
+                    </button>
                    <button
-                     onClick={() => onEditEpisode(episode.id, {
-                       number: episode.number,
-                       title: episode.title,
-                       url: episode.url,
-                       watched: episode.watched,
-                       notes: episode.notes || ''
-                     })}
-                     className="text-blue-600 hover:text-blue-900 mr-4"
+                     onClick={() => onDeleteEpisode(episode.id)}
+                     className="text-red-600 hover:text-red-900"
                    >
-                     编辑
+                     删除
                    </button>
-                  <button
-                    onClick={() => onDeleteEpisode(episode.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    删除
-                  </button>
-                </td>
+                 </td>
               </tr>
             ))}
           </tbody>
@@ -187,20 +263,14 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
         <div className="text-sm text-gray-500">
           已选择 {selectedEpisodes.length} 个剧集
         </div>
-        <div className="flex space-x-3">
-           <button
-             onClick={() => onAddEpisode({
-               number: episodes.length > 0 ? Math.max(...episodes.map(ep => ep.number)) + 1 : 1,
-               title: '',
-               url: '',
-               watched: false,
-               notes: ''
-             })}
-             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-           >
-             添加新行
-           </button>
-        </div>
+         <div className="flex space-x-3">
+            <button
+              onClick={handleAddNew}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              添加新行
+            </button>
+         </div>
       </div>
     </div>
   );
