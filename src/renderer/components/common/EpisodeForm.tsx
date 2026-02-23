@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import FormValidation from './FormValidation';
 import useFormValidation from '../../hooks/useFormValidation';
 
@@ -17,6 +17,7 @@ interface EpisodeFormProps {
   onCancel?: () => void;
   onDelete?: () => void;
   enableValidation?: boolean;
+  isOpen?: boolean;
 }
 
 const EpisodeForm: React.FC<EpisodeFormProps> = ({
@@ -25,15 +26,133 @@ const EpisodeForm: React.FC<EpisodeFormProps> = ({
   className = '',
   onCancel,
   onDelete,
-  enableValidation = true
+  enableValidation = true,
+  isOpen = true
 }) => {
   const [formData, setFormData] = useState<EpisodeFormData>({
-    number: initialData.number || 1,
-    title: initialData.title || '',
-    url: initialData.url || '',
-    watched: initialData.watched || false,
-    notes: initialData.notes || '',
+    number: initialData?.number ?? 1,
+    title: initialData?.title ?? '',
+    url: initialData?.url ?? '',
+    watched: initialData?.watched ?? false,
+    notes: initialData?.notes ?? '',
   });
+  
+  const numberInputRef = useRef<HTMLInputElement>(null);
+  
+  // 当组件挂载或模态框打开时，设置输入框焦点
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    console.log('EpisodeForm: 组件打开，准备设置输入框焦点');
+    console.log('EpisodeForm: initialData =', initialData ? 'edit' : 'new');
+    
+    // 焦点设置函数
+    const setFocusToInput = () => {
+      if (!numberInputRef.current) {
+        console.warn('EpisodeForm: 输入框引用为空，等待渲染');
+        return false;
+      }
+      
+      const input = numberInputRef.current;
+      
+      // 检查输入框状态
+      console.log('EpisodeForm: 输入框状态检查:', {
+        exists: !!input,
+        id: input.id,
+        disabled: input.disabled,
+        readOnly: input.readOnly,
+        tabIndex: input.tabIndex,
+        offsetParent: !!input.offsetParent
+      });
+      
+      // 确保输入框没有被禁用
+      if (input.disabled) {
+        console.warn('EpisodeForm: 输入框被禁用，正在启用');
+        input.disabled = false;
+      }
+      
+      // 确保输入框可见
+      if (!input.offsetParent) {
+        console.warn('EpisodeForm: 输入框不可见，无法设置焦点');
+        return false;
+      }
+      
+      // 设置焦点
+      try {
+        console.log('EpisodeForm: 尝试设置焦点...');
+        input.focus();
+        console.log('EpisodeForm: 焦点设置调用完成');
+        return true;
+      } catch (error) {
+        console.error('EpisodeForm: 设置焦点时出错:', error);
+        return false;
+      }
+    };
+    
+    // 验证焦点是否设置成功
+    const verifyFocus = () => {
+      if (!numberInputRef.current) return;
+      
+      const isFocused = document.activeElement === numberInputRef.current;
+      console.log('EpisodeForm: 焦点验证:', {
+        success: isFocused,
+        activeElement: document.activeElement?.id || document.activeElement?.tagName,
+        expectedElement: numberInputRef.current.id
+      });
+      
+      if (!isFocused) {
+        console.warn('EpisodeForm: 焦点设置失败，将尝试重试');
+        return false;
+      }
+      
+      console.log('EpisodeForm: 焦点设置成功！');
+      return true;
+    };
+    
+    // 主焦点设置流程
+    const focusSetupProcess = () => {
+      console.log('EpisodeForm: 开始焦点设置流程');
+      
+      // 第一步：尝试设置焦点
+      const focusSet = setFocusToInput();
+      
+      if (!focusSet) {
+        console.warn('EpisodeForm: 首次焦点设置失败，将在100ms后重试');
+        setTimeout(() => {
+          setFocusToInput();
+          setTimeout(verifyFocus, 50);
+        }, 100);
+        return;
+      }
+      
+      // 第二步：验证焦点
+      setTimeout(() => {
+        const verified = verifyFocus();
+        
+        if (!verified) {
+          // 如果验证失败，尝试更激进的方法
+          console.warn('EpisodeForm: 焦点验证失败，尝试强制方法');
+          setTimeout(() => {
+            if (numberInputRef.current) {
+              const input = numberInputRef.current;
+              const originalTabIndex = input.tabIndex;
+              input.tabIndex = -1;
+              input.focus();
+              input.tabIndex = originalTabIndex;
+              setTimeout(verifyFocus, 50);
+            }
+          }, 100);
+        }
+      }, 50);
+    };
+    
+    // 延迟执行以确保DOM完全渲染
+    const timer = setTimeout(focusSetupProcess, 150);
+    
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [initialData, isOpen]);
 
   // 表单验证
   const { errors, validate } = useFormValidation(
@@ -85,14 +204,16 @@ const EpisodeForm: React.FC<EpisodeFormProps> = ({
 
   const handleReset = () => {
     setFormData({
-      number: initialData.number || 1,
-      title: initialData.title || '',
-      url: initialData.url || '',
-      watched: initialData.watched || false,
-      notes: initialData.notes || '',
+      number: initialData?.number ?? 1,
+      title: initialData?.title ?? '',
+      url: initialData?.url ?? '',
+      watched: initialData?.watched ?? false,
+      notes: initialData?.notes ?? '',
     });
   };
 
+
+  
   return (
     <form onSubmit={handleSubmit} className={`space-y-6 ${className}`}>
       {/* 显示表单验证错误 */}
@@ -108,17 +229,21 @@ const EpisodeForm: React.FC<EpisodeFormProps> = ({
           <label htmlFor="number" className="block text-sm font-medium text-gray-700 mb-1">
             剧集编号 *
           </label>
-           <input
-             type="number"
-             id="number"
-             name="number"
-             value={formData.number}
-             onChange={handleChange}
-             min="1"
-             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-             required
-             autoFocus
-           />
+            <input
+              type="number"
+              id="number"
+              name="number"
+              value={formData.number}
+              onChange={handleChange}
+              min="1"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+              ref={numberInputRef}
+              autoFocus
+              // 添加详细的事件监听用于诊断
+
+
+            />
           <p className="mt-1 text-sm text-gray-500">剧集的顺序编号，必须大于0</p>
         </div>
 
@@ -148,16 +273,16 @@ const EpisodeForm: React.FC<EpisodeFormProps> = ({
         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
           剧集标题 *
         </label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          placeholder="例如：第一话 觉醒"
-          required
-        />
+         <input
+           type="text"
+           id="title"
+           name="title"
+           value={formData.title}
+           onChange={handleChange}
+
+           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+           required
+         />
         <p className="mt-1 text-sm text-gray-500">剧集的标题或名称</p>
       </div>
 
@@ -166,16 +291,16 @@ const EpisodeForm: React.FC<EpisodeFormProps> = ({
         <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
           剧集链接 *
         </label>
-        <input
-          type="text"
-          id="url"
-          name="url"
-          value={formData.url}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          placeholder="例如：https://example.com/episode1 或 file:///path/to/episode.mp4"
-          required
-        />
+         <input
+           type="text"
+           id="url"
+           name="url"
+           value={formData.url}
+           onChange={handleChange}
+
+           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+           required
+         />
         <p className="mt-1 text-sm text-gray-500">
           播放链接，可以是URL或本地文件路径。支持：http/https链接、本地文件路径(file://)、磁力链接(magnet:)
         </p>
@@ -226,16 +351,37 @@ const EpisodeForm: React.FC<EpisodeFormProps> = ({
               删除
             </button>
           )}
-        </div>
-        <div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            {initialData.title ? '更新剧集' : '添加剧集'}
-          </button>
-        </div>
-      </div>
+         </div>
+         <div className="flex space-x-3">
+           {/* 调试按钮 - 只在开发环境显示 */}
+           {process.env.NODE_ENV === 'development' && (
+             <button
+               type="button"
+               onClick={() => {
+                 console.log('=== 手动修复输入框焦点 ===');
+                 if (numberInputRef.current) {
+                   console.log('强制重绘输入框...');
+                   numberInputRef.current.style.display = 'none';
+                   numberInputRef.current.offsetHeight;
+                   numberInputRef.current.style.display = '';
+                   numberInputRef.current.focus();
+                   numberInputRef.current.select();
+                   console.log('完成');
+                 }
+               }}
+               className="px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
+             >
+               修复输入框
+             </button>
+           )}
+           <button
+             type="submit"
+             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+           >
+             {initialData.title ? '更新剧集' : '添加剧集'}
+           </button>
+         </div>
+       </div>
     </form>
   );
 };

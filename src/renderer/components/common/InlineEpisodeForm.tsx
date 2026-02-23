@@ -30,11 +30,11 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
   isEditing = false
 }) => {
   const [formData, setFormData] = useState<EpisodeFormData>({
-    number: initialData.number || 1,
-    title: initialData.title || '',
-    url: initialData.url || '',
-    watched: initialData.watched || false,
-    notes: initialData.notes || '',
+    number: initialData?.number ?? 1,
+    title: initialData?.title ?? '',
+    url: initialData?.url ?? '',
+    watched: initialData?.watched ?? false,
+    notes: initialData?.notes ?? '',
   });
   
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -94,11 +94,11 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
   
   const handleReset = () => {
     setFormData({
-      number: initialData.number || 1,
-      title: initialData.title || '',
-      url: initialData.url || '',
-      watched: initialData.watched || false,
-      notes: initialData.notes || '',
+      number: initialData?.number ?? 1,
+      title: initialData?.title ?? '',
+      url: initialData?.url ?? '',
+      watched: initialData?.watched ?? false,
+      notes: initialData?.notes ?? '',
     });
   };
   
