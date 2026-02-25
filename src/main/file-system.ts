@@ -88,6 +88,31 @@ export function registerFileSystemHandlers(): void {
     }
   })
 
+  ipcMain.handle('write-log-file', async (_event, content: string) => {
+    try {
+      const logDir = path.join(app.getPath('userData'), 'logs')
+      const logFile = path.join(logDir, `app-${new Date().toISOString().split('T')[0]}.log`)
+      
+      // 确保日志目录存在
+      try {
+        await accessAsync(logDir)
+      } catch {
+        await mkdirAsync(logDir, { recursive: true })
+      }
+      
+      // 追加内容到日志文件
+      const timestamp = new Date().toISOString()
+      const logEntry = `\n=== ${timestamp} ===\n${content}\n`
+      
+      await writeFileAsync(logFile, logEntry, { flag: 'a' })
+      return { success: true }
+    } catch (error) {
+      console.error('写入日志文件失败:', error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      return { success: false, error: errorMessage }
+    }
+  })
+
   ipcMain.handle('get-settings', async () => {
     try {
       await ensureSettingsFileExists()

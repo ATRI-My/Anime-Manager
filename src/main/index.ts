@@ -45,6 +45,9 @@ function createWindow() {
       console.error('无法找到HTML文件，显示错误页面')
       mainWindow.loadURL(`data:text/html,<h1>应用启动失败</h1><p>无法找到HTML文件</p>`)
     }
+    
+    // 在生产环境也打开开发者工具以便调试
+    mainWindow.webContents.openDevTools()
   }
 
   mainWindow.on('closed', () => {

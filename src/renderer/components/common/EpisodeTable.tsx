@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Episode as SharedEpisode } from '../../../shared/types';
 import type { EpisodeFormData } from './InlineEpisodeForm';
 import InlineEpisodeForm from './InlineEpisodeForm';
@@ -25,6 +25,16 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
   const [showInlineForm, setShowInlineForm] = useState(false);
   const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+
+  // 当剧集数据变化时，重置表单状态
+  useEffect(() => {
+    // 如果正在编辑的剧集被删除，关闭表单
+    if (editingEpisodeId && !episodes.find(ep => ep.id === editingEpisodeId)) {
+      setShowInlineForm(false);
+      setEditingEpisodeId(null);
+      setIsAddingNew(false);
+    }
+  }, [episodes, editingEpisodeId]);
 
   const handleSelectEpisode = (episodeId: string) => {
     if (selectedEpisodes.includes(episodeId)) {

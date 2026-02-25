@@ -39,10 +39,30 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
   
   const titleInputRef = useRef<HTMLInputElement>(null);
   
+  // 尽可能强地保证标题输入框可用且获得焦点（兼容删除后焦点异常的情况）
   useEffect(() => {
-    if (titleInputRef.current) {
-      titleInputRef.current.focus();
-    }
+    const focusTitleInput = () => {
+      if (titleInputRef.current) {
+        // 防御性：如果被异常标记为 disabled，则恢复
+        if (titleInputRef.current.disabled) {
+          titleInputRef.current.disabled = false;
+        }
+        titleInputRef.current.focus();
+        // 多数情况下选中文本，方便连续输入
+        titleInputRef.current.select();
+      }
+    };
+
+    // 挂载后短延时聚焦一次，处理初次打开
+    const timer = window.setTimeout(focusTitleInput, 50);
+
+    // 当窗口重新获得焦点时，再尝试一次聚焦
+    window.addEventListener('focus', focusTitleInput);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('focus', focusTitleInput);
+    };
   }, []);
   
   const { errors, validate } = useFormValidation(
@@ -219,3 +239,4 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
 };
 
 export default InlineEpisodeForm;
+export type { EpisodeFormData };

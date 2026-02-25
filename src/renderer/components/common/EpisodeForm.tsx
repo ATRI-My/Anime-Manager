@@ -43,111 +43,21 @@ const EpisodeForm: React.FC<EpisodeFormProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     
-    console.log('EpisodeForm: 组件打开，准备设置输入框焦点');
-    console.log('EpisodeForm: initialData =', initialData ? 'edit' : 'new');
-    
-    // 焦点设置函数
-    const setFocusToInput = () => {
-      if (!numberInputRef.current) {
-        console.warn('EpisodeForm: 输入框引用为空，等待渲染');
-        return false;
-      }
-      
-      const input = numberInputRef.current;
-      
-      // 检查输入框状态
-      console.log('EpisodeForm: 输入框状态检查:', {
-        exists: !!input,
-        id: input.id,
-        disabled: input.disabled,
-        readOnly: input.readOnly,
-        tabIndex: input.tabIndex,
-        offsetParent: !!input.offsetParent
-      });
-      
-      // 确保输入框没有被禁用
-      if (input.disabled) {
-        console.warn('EpisodeForm: 输入框被禁用，正在启用');
-        input.disabled = false;
-      }
-      
-      // 确保输入框可见
-      if (!input.offsetParent) {
-        console.warn('EpisodeForm: 输入框不可见，无法设置焦点');
-        return false;
-      }
-      
-      // 设置焦点
-      try {
-        console.log('EpisodeForm: 尝试设置焦点...');
-        input.focus();
-        console.log('EpisodeForm: 焦点设置调用完成');
-        return true;
-      } catch (error) {
-        console.error('EpisodeForm: 设置焦点时出错:', error);
-        return false;
-      }
-    };
-    
-    // 验证焦点是否设置成功
-    const verifyFocus = () => {
-      if (!numberInputRef.current) return;
-      
-      const isFocused = document.activeElement === numberInputRef.current;
-      console.log('EpisodeForm: 焦点验证:', {
-        success: isFocused,
-        activeElement: document.activeElement?.id || document.activeElement?.tagName,
-        expectedElement: numberInputRef.current.id
-      });
-      
-      if (!isFocused) {
-        console.warn('EpisodeForm: 焦点设置失败，将尝试重试');
-        return false;
-      }
-      
-      console.log('EpisodeForm: 焦点设置成功！');
-      return true;
-    };
-    
-    // 主焦点设置流程
-    const focusSetupProcess = () => {
-      console.log('EpisodeForm: 开始焦点设置流程');
-      
-      // 第一步：尝试设置焦点
-      const focusSet = setFocusToInput();
-      
-      if (!focusSet) {
-        console.warn('EpisodeForm: 首次焦点设置失败，将在100ms后重试');
-        setTimeout(() => {
-          setFocusToInput();
-          setTimeout(verifyFocus, 50);
-        }, 100);
-        return;
-      }
-      
-      // 第二步：验证焦点
-      setTimeout(() => {
-        const verified = verifyFocus();
-        
-        if (!verified) {
-          // 如果验证失败，尝试更激进的方法
-          console.warn('EpisodeForm: 焦点验证失败，尝试强制方法');
-          setTimeout(() => {
-            if (numberInputRef.current) {
-              const input = numberInputRef.current;
-              const originalTabIndex = input.tabIndex;
-              input.tabIndex = -1;
-              input.focus();
-              input.tabIndex = originalTabIndex;
-              setTimeout(verifyFocus, 50);
-            }
-          }, 100);
+    // 简单的焦点设置逻辑
+    const timer = setTimeout(() => {
+      if (numberInputRef.current) {
+        // 确保输入框没有被禁用
+        if (numberInputRef.current.disabled) {
+          numberInputRef.current.disabled = false;
         }
-      }, 50);
-    };
-    
-    // 延迟执行以确保DOM完全渲染
-    const timer = setTimeout(focusSetupProcess, 150);
+        
+        // 设置焦点
+        numberInputRef.current.focus();
+        
+        // 可选：选中文本
+        numberInputRef.current.select();
+      }
+    }, 50);
     
     return () => {
       clearTimeout(timer);

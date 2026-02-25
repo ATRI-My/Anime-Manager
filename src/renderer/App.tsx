@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import QueryPage from './components/QueryPage/QueryPage';
 import WritePage from './components/WritePage/WritePage';
 import SettingsPage from './components/SettingsPage/SettingsPage';
 import { ToastProvider } from './contexts/ToastContext';
 import { AppDataProvider } from './contexts/AppDataContext';
 import ToastContainer from './components/common/ToastContainer';
+import { initLogger } from './utils/logger';
 
 type TabType = 'query' | 'write' | 'settings';
 
@@ -72,6 +73,11 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  // 初始化日志系统
+  useEffect(() => {
+    initLogger();
+  }, []);
+
   return (
     <AppDataProvider>
       <ToastProvider>

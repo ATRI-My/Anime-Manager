@@ -19,6 +19,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readFile: (filePath: string) => ipcRenderer.invoke('read-file', filePath),
   writeFile: (filePath: string, content: any) => ipcRenderer.invoke('write-file', filePath, content),
   
+  // 日志文件API
+  writeLogFile: (content: string) => ipcRenderer.invoke('write-log-file', content),
+  
   // 文件对话框API
   openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
   saveFileDialog: () => ipcRenderer.invoke('save-file-dialog'),
@@ -44,6 +47,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       electronAPI: {
         readFile: (filePath: string) => Promise<any>
         writeFile: (filePath: string, content: any) => Promise<{ success: boolean }>
+        writeLogFile: (content: string) => Promise<{ success: boolean; error?: string }>
         openFileDialog: () => Promise<{ canceled: boolean; filePaths: string[] }>
         saveFileDialog: () => Promise<{ canceled: boolean; filePath: string }>
         readAnimeData: () => Promise<AppData>

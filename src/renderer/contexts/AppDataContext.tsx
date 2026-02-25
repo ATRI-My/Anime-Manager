@@ -50,6 +50,7 @@ export interface AppDataActions {
   
   // 工具方法
   reloadData: () => Promise<void>;
+  refreshState: () => void;
   clearError: () => void;
 }
 
@@ -208,6 +209,13 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
     
     await loadFromFile(state.currentFilePath);
   }, [state.currentFilePath, loadFromFile]);
+
+  const refreshState = useCallback(() => {
+    console.log('refreshState');
+    // 只是触发一次状态更新，让React重新渲染
+    // 不重新从磁盘加载数据
+    setState(prev => ({ ...prev }));
+  }, []);
 
   const saveAsFile = useCallback(async () => {
     console.log('saveAsFile');
@@ -634,6 +642,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
       updateSettings,
       updateToolConfig,
       reloadData,
+      refreshState,
       clearError,
     },
   };

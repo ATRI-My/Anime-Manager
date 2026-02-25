@@ -56,4 +56,5 @@ if exist "dist-unpacked\win-unpacked\Anime Manager.exe" (
 
 echo.
 echo 完成！未打包程序已生成到 dist-unpacked 目录。
+echo 构建完成时间: %date% %time%
 pause
