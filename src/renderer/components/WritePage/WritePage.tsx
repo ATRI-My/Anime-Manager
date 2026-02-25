@@ -186,24 +186,22 @@ const WritePage: React.FC = () => {
     const episode = selectedAnime?.episodes.find(ep => ep.id === episodeId);
     if (!episode) return;
     
-    if (confirm(`确定要删除剧集 "${episode.title}" 吗？`)) {
-      try {
-        const result = await actions.deleteEpisode(selectedAnimeId, episodeId);
+    try {
+      const result = await actions.deleteEpisode(selectedAnimeId, episodeId);
+      
+      if (result.success) {
+        addToast('success', '删除剧集', '剧集删除成功');
         
-        if (result.success) {
-          addToast('success', '删除剧集', '剧集删除成功');
-          
-          // 直接更新selectedAnime状态，避免不必要的全局刷新
-          if (result.updatedAnime) {
-            setSelectedAnimeId(result.updatedAnime.id);
-          }
-        } else {
-          addToast('error', '删除剧集失败', result.error || '未知错误');
+        // 直接更新selectedAnime状态，避免不必要的全局刷新
+        if (result.updatedAnime) {
+          setSelectedAnimeId(result.updatedAnime.id);
         }
-      } catch (error) {
-        console.error('删除剧集失败:', error);
-        addToast('error', '删除剧集失败', error instanceof Error ? error.message : '未知错误');
+      } else {
+        addToast('error', '删除剧集失败', result.error || '未知错误');
       }
+    } catch (error) {
+      console.error('删除剧集失败:', error);
+      addToast('error', '删除剧集失败', error instanceof Error ? error.message : '未知错误');
     }
   };
 
@@ -214,32 +212,30 @@ const WritePage: React.FC = () => {
   const handleBulkDeleteEpisodes = async (episodeIds: string[]) => {
     if (!selectedAnimeId || episodeIds.length === 0) return;
     
-    if (confirm(`确定要批量删除 ${episodeIds.length} 个剧集吗？`)) {
-      try {
-        // 不再需要手动更新selectedAnime，依赖全局状态自动更新
-        
-        // 更新全局状态 - 使用deleteEpisode逐个删除以确保一致性
-        let allSuccess = true;
-        for (const episodeId of episodeIds) {
-          const result = await actions.deleteEpisode(selectedAnimeId, episodeId);
-          if (!result.success) {
-            allSuccess = false;
-            console.error(`删除剧集 ${episodeId} 失败:`, result.error);
-          }
+    try {
+      // 不再需要手动更新selectedAnime，依赖全局状态自动更新
+      
+      // 更新全局状态 - 使用deleteEpisode逐个删除以确保一致性
+      let allSuccess = true;
+      for (const episodeId of episodeIds) {
+        const result = await actions.deleteEpisode(selectedAnimeId, episodeId);
+        if (!result.success) {
+          allSuccess = false;
+          console.error(`删除剧集 ${episodeId} 失败:`, result.error);
         }
-        
-        if (allSuccess) {
-          addToast('success', '批量删除剧集', `成功删除 ${episodeIds.length} 个剧集`);
-          
-          // 添加提示：修改已保存到内存，需要手动保存到文件
-          toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
-        } else {
-          addToast('error', '批量删除剧集失败', '部分剧集删除失败，请检查');
-        }
-      } catch (error) {
-        console.error('批量删除剧集失败:', error);
-        addToast('error', '批量删除剧集失败', error instanceof Error ? error.message : '未知错误');
       }
+      
+      if (allSuccess) {
+        addToast('success', '批量删除剧集', `成功删除 ${episodeIds.length} 个剧集`);
+        
+        // 添加提示：修改已保存到内存，需要手动保存到文件
+        toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
+      } else {
+        addToast('error', '批量删除剧集失败', '部分剧集删除失败，请检查');
+      }
+    } catch (error) {
+      console.error('批量删除剧集失败:', error);
+      addToast('error', '批量删除剧集失败', error instanceof Error ? error.message : '未知错误');
     }
   };
 

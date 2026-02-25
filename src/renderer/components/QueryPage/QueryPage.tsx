@@ -15,7 +15,7 @@ interface QueryPageProps {
 }
 
 const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
-  const { state, actions } = useAppDataContext();
+  const { state } = useAppDataContext();
   const { addToast } = useToast();
   const { animeList, loading, error } = state;
   const virtualScroll = useVirtualScrollConfig();
@@ -47,30 +47,7 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
     setSelectedAnime(anime);
   };
 
-  // 处理动漫编辑
-  const handleEditAnime = (anime: Anime) => {
-    console.log('编辑动漫:', anime);
-    // TODO: 实现编辑功能
-  };
-
-  // 处理动漫删除
-  const handleDeleteAnime = async (anime: Anime) => {
-    if (confirm(`确定要删除 "${anime.title}" 吗？`)) {
-      try {
-        const result = await actions.deleteAnime(anime.id);
-        if (result.success) {
-          addToast('success', '删除番剧', '番剧删除成功');
-        } else {
-          addToast('error', '删除番剧失败', result.error || '未知错误');
-        }
-        if (selectedAnime?.id === anime.id) {
-          setSelectedAnime(null);
-        }
-      } catch (error) {
-        addToast('error', '删除番剧失败', error instanceof Error ? error.message : '未知错误');
-      }
-    }
-  };
+  // 查询页：只用于查看动漫和剧集详情，不提供编辑/删除动漫功能
 
   // 处理剧集选择
   const handleSelectEpisode = (episode: Episode) => {
@@ -150,7 +127,7 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
     <div className={`p-6 ${className}`}>
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">动漫查询</h2>
-        <p className="text-gray-600 mb-6">搜索和管理您的动漫资源</p>
+        <p className="text-gray-600 mb-6">搜索和浏览您的动漫资源</p>
         
         <div className="mb-8">
           <SearchBar 
@@ -185,8 +162,6 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
             <VirtualAnimeGrid
               animeList={filteredAnimeList}
               onSelect={handleSelectAnime}
-              onEdit={handleEditAnime}
-              onDelete={handleDeleteAnime}
               className="rounded-lg border border-gray-200"
               {...virtualScroll.getAnimeGridProps()}
             />
@@ -198,8 +173,6 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
                 key={anime.id}
                 anime={anime}
                 onSelect={handleSelectAnime}
-                onEdit={handleEditAnime}
-                onDelete={handleDeleteAnime}
               />
             ))}
           </div>

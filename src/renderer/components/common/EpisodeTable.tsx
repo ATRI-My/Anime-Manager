@@ -55,20 +55,19 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
 
   const handleBulkDelete = () => {
     if (selectedEpisodes.length === 0) {
-      alert('请先选择要删除的剧集');
       return;
     }
-    if (confirm(`确定要删除选中的 ${selectedEpisodes.length} 个剧集吗？`)) {
-      if (onBulkDeleteEpisodes) {
-        // 使用批量删除函数
-        onBulkDeleteEpisodes(selectedEpisodes);
-      } else {
-        // 回退到逐个删除
-        selectedEpisodes.forEach(id => onDeleteEpisode(id));
-      }
-      setSelectedEpisodes([]);
-      setSelectAll(false);
+    
+    // 为避免浏览器原生 confirm/alert 造成 Electron 焦点异常，这里直接执行删除
+    if (onBulkDeleteEpisodes) {
+      // 使用批量删除函数
+      onBulkDeleteEpisodes(selectedEpisodes);
+    } else {
+      // 回退到逐个删除
+      selectedEpisodes.forEach(id => onDeleteEpisode(id));
     }
+    setSelectedEpisodes([]);
+    setSelectAll(false);
   };
 
   // 内联表单事件处理

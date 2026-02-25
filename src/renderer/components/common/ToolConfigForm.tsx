@@ -112,7 +112,7 @@ const ToolConfigForm: React.FC<ToolConfigFormProps> = ({
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
               />
               <label htmlFor="defaultBrowser" className="ml-3 block text-sm font-medium text-gray-700">
-                系统默认浏览器
+                系统默认
               </label>
             </div>
             
@@ -207,7 +207,7 @@ const ToolConfigForm: React.FC<ToolConfigFormProps> = ({
               <div className="flex items-center">
                 <span className="text-sm font-medium text-gray-700 mr-2">当前工具:</span>
                 <span className="text-sm text-gray-900">
-                  {config.useCustomTool ? config.customTool.name || '未设置' : '系统默认浏览器'}
+                  {config.useCustomTool ? config.customTool.name || '未设置' : '系统默认'}
                 </span>
               </div>
               

@@ -60,7 +60,7 @@ npx electron-builder --dir --config.directories.output=dist-unpacked
 4. 验证光标在输入框中正常闪烁
 
 ## 构建信息
-- 构建时间：2026年2月25日
+- 构建时间：2026年2月25日 18:07
 - 修复版本：v1.0.0-focus-fix-v2
 - Electron版本：25.9.8
 - 包含修复：剧集管理输入框焦点问题
