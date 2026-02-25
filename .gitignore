@@ -46,6 +46,7 @@ test-reports/
 dist/win-unpacked/
 dist/mac/
 dist/linux/
+dist-unpacked/
 
 # Temporary files
 tmp/
