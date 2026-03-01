@@ -1,0 +1,5 @@
+;!@Install@!UTF-8!
+Title="动漫管理工具安装程序"
+BeginPrompt="是否安装动漫管理工具？"
+RunProgram="Anime Manager.exe"
+;!@InstallEnd@!

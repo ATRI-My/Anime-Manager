@@ -57,6 +57,22 @@ logs/
 *.log
 
 # Package manager specific
-package-lock.json
+# package-lock.json  # 保留package-lock.json以便依赖版本锁定
 yarn.lock
-pnpm-lock.yaml.worktrees/
+pnpm-lock.yaml
+
+# Development tools
+.worktrees/
+
+# Windows specific
+Thumbs.db
+Desktop.ini
+
+# Build artifacts
+*.exe
+*.msi
+*.dmg
+*.deb
+*.rpm
+*.AppImage
+*.snap
