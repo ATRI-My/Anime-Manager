@@ -1,376 +1,233 @@
-# 动漫管理工具
+# Anime Manager - 动漫资源管理器
 
-动漫资源管理器桌面应用，基于 Electron + React + TypeScript 构建。
+一个现代化的动漫资源管理桌面应用，使用 Electron + React + TypeScript 构建。
 
-## 功能特性
+> **AI 生成声明**: 本项目的大部分代码和文档是通过 AI 辅助生成的，展示了 AI 在软件开发中的实际应用。
 
-- 🎬 动漫资源管理
-- 🔍 智能搜索和过滤
-- 📁 文件系统集成
-- 🎨 现代化用户界面
-- ⚡ 高性能虚拟滚动
-- 📊 数据统计和分析
-- ⚠️ 未保存修改提示系统（新增）
-- 💾 增强的保存状态显示（新增）
-- 🛡️ 页面切换和应用关闭保护（新增）
+## ✨ 功能特性
 
-## 快速开始
+### 🎬 动漫管理
+- 完整的动漫信息管理（标题、描述、标签、观看方式）
+- 剧集管理（集数、标题、链接、观看状态）
+- 智能搜索和过滤功能
 
-### 开发环境
+### 📁 文件系统集成
+- 本地数据存储（JSON 格式）
+- 支持自定义数据文件夹路径
+- 自动保存和备份机制
 
-1. 安装依赖：
+### 🎨 现代化界面
+- 响应式设计，支持暗色主题
+- 标签页导航（查询、写入、设置）
+- 实时表单验证和错误提示
+- 虚拟滚动支持大量数据
+
+### ⚡ 高级功能
+- 未保存修改提示系统
+- 增强的保存状态显示
+- 页面切换和应用关闭保护
+- 实时数据同步
+
+## 🚀 快速开始
+
+### 环境要求
+- Node.js 18+
+- npm 或 yarn
+- Windows 系统（支持其他平台但主要针对 Windows 优化）
+
+### 安装依赖
 ```bash
 npm install
 ```
 
-2. 启动开发服务器：
+### 开发模式
 ```bash
 npm run dev
 ```
 
-### 构建应用程序
-
-#### 生成未打包版本（开发测试）
+### 构建应用
 ```bash
+# 构建项目
 npm run build
+
+# 生成未打包版本（开发测试）
 npm run pack
-```
 
-未打包版本位于：`dist/win-unpacked/`
-
-#### 生成安装包
-```bash
+# 生成完整安装包
 npm run dist
 ```
 
-## 项目结构
+## 📦 项目结构
 
 ```
-src/
-├── main/           # Electron 主进程
-├── renderer/       # React 渲染进程
-└── shared/         # 共享代码
+anime-manager/
+├── src/
+│   ├── main/           # Electron 主进程
+│   │   ├── index.ts    # 主进程入口
+│   │   ├── preload.ts  # 预加载脚本
+│   │   └── file-system.ts # 文件系统操作
+│   ├── renderer/       # React 渲染进程
+│   │   ├── App.tsx     # 主应用组件
+│   │   ├── components/ # React 组件
+│   │   ├── contexts/   # React 上下文
+│   │   ├── hooks/      # 自定义 Hooks
+│   │   └── utils/      # 工具函数
+│   └── shared/         # 共享代码
+│       ├── types.ts    # TypeScript 类型定义
+│       ├── utils.ts    # 共享工具函数
+│       └── validation.ts # 数据验证
+├── docs/               # 项目文档
+│   ├── design/         # 设计文档
+│   └── plans/          # 开发计划
+├── scripts/            # 构建和开发脚本
+└── dist/               # 构建输出目录（被 .gitignore 忽略）
 ```
 
-## 未打包程序使用
+## 🛠️ 技术栈
 
-### 已修复的问题
-在本次更新中，修复了剧集管理中的输入框焦点问题：
+- **前端框架**: React 18 + TypeScript
+- **桌面框架**: Electron 25
+- **构建工具**: Vite 4
+- **样式**: Tailwind CSS 3
+- **数据存储**: JSON 文件（存储在用户数据目录）
+- **虚拟滚动**: React Window
+- **开发工具**: 
+  - ESLint + TypeScript 类型检查
+  - Concurrently 并行运行命令
+  - Electron Builder 打包
 
-#### 问题描述
-在写入板块中，剧集管理里一旦使用了删除或批量删除功能，再打开添加新行的弹窗输入框就无法点击、输入。但这时点一下软件界面外的任意位置，就会恢复功能。
+## 🤖 AI 辅助开发
 
-#### 修复内容
-1. **修复了事件处理问题**：移除了阻止输入框获得焦点的事件处理器
-2. **简化了焦点管理**：移除了复杂的焦点设置代码，改为简单的延迟焦点设置
-3. **优化了状态管理**：避免了删除操作后不必要的全局状态刷新
+本项目是 AI 辅助开发的典型案例：
 
-### 如何运行未打包程序
+### AI 生成内容
+- **代码生成**: 大部分 React 组件、TypeScript 类型定义、工具函数
+- **文档生成**: README、设计文档、开发计划
+- **测试代码**: 单元测试和集成测试
+- **构建脚本**: 批处理文件和配置
 
-#### 方法1：使用启动脚本（推荐）
-1. 双击 `启动程序.bat`
-2. 程序将自动启动
+### AI 协助解决的问题
+1. **焦点管理**: 修复了表单输入框的焦点问题
+2. **状态同步**: 实现了实时数据同步机制
+3. **错误处理**: 增强了错误边界和用户提示
+4. **性能优化**: 虚拟滚动和懒加载实现
+5. **代码重构**: WritePage组件状态管理重构
+6. **功能实现**: 设置页面数据文件夹功能
 
-#### 方法2：手动运行
-1. 进入 `dist-unpacked\win-unpacked\` 目录
-2. 双击 `Anime Manager.exe`
+### 开发流程
+1. **需求分析**: 通过对话明确功能需求
+2. **计划制定**: 创建详细的实施计划文档
+3. **AI 生成**: 生成初始代码和文档
+4. **人工审查**: 检查代码质量和逻辑正确性
+5. **迭代优化**: 基于反馈进行改进
+6. **测试验证**: 确保功能完整性和稳定性
 
-#### 方法3：开发模式运行
-```bash
-npm run dev
-```
+> **注意**: 部分计划文档中的技术栈描述（如Vue.js、SQLite）与实际实现（React、JSON存储）不一致，反映了开发过程中的技术决策变化。
 
-### 文件结构
-```
-dist-unpacked/
-└── win-unpacked/
-    ├── Anime Manager.exe      # 主程序
-    ├── resources/             # 资源文件
-    │   ├── app.asar           # 打包的应用代码
-    │   └── app.asar.unpacked/ # 解压的代码（包含dist目录）
-    └── 其他依赖文件...
-```
+## 📄 数据格式
 
-### 如何生成未打包程序
-运行以下命令生成最新版本的未打包程序：
-
-```bash
-generate-unpacked.bat
-```
-
-或手动执行：
-
-```bash
-npm run build
-npx electron-builder --dir --config.directories.output=dist-unpacked
-```
-
-## 焦点修复详细说明
-
-### 问题描述
-用户报告：在写入板块中，剧集管理里一旦使用了删除或批量删除功能，再打开添加新行的弹窗输入框就无法点击、输入。但这时点一下软件界面外的任意位置，就会恢复功能。
-
-具体表现：
-1. 删除操作后，弹窗打开时输入框显示为灰色/禁用状态
-2. 鼠标移到输入框上时光标会正常变化
-3. 点击输入框后不会选中变蓝（焦点没有设置）
-4. 点击软件窗口外任意位置，输入框突然就可以点击了
-
-### 根本原因分析
-经过分析，问题的根本原因是：**删除操作后，某些元素（如删除按钮）可能仍然保持着焦点，或者焦点被设置到了不可见的元素上，导致新打开的模态框中的输入框无法获得焦点**。
-
-当用户点击软件窗口外时，浏览器会清除所有焦点，然后输入框才能正常工作。
-
-### 修复方案
-
-#### 1. 删除操作后清除焦点（WritePage.tsx）
+### 动漫数据结构
 ```typescript
-// 关键修复：清除任何可能残留的焦点
-setTimeout(() => {
-  // 清除文档焦点
-  if (document.activeElement && document.activeElement !== document.body) {
-    (document.activeElement as HTMLElement).blur();
-  }
-  // 确保body获得焦点
-  document.body.focus();
-}, 10);
-```
+interface Anime {
+  id: string
+  title: string
+  watchMethod: string
+  description?: string
+  tags: string[]
+  episodes: Episode[]
+  createdAt: string
+  updatedAt: string
+}
 
-#### 2. 模态框打开时强制设置焦点（EpisodeModal.tsx）
-```typescript
-// 关键修复：先清除所有焦点，再设置到输入框
-const setupFocus = () => {
-  // 1. 首先清除任何现有的焦点
-  if (document.activeElement && document.activeElement !== document.body) {
-    (document.activeElement as HTMLElement).blur();
-  }
-  
-  // 2. 给body设置焦点（作为焦点重置）
-  document.body.focus();
-  
-  // 3. 确保输入框没有被禁用
-  if (firstInput.disabled) {
-    firstInput.disabled = false;
-  }
-  
-  // 4. 设置焦点到输入框
-  firstInput.focus();
-};
-```
-
-#### 3. 确保输入框可交互（EpisodeForm.tsx）
-```typescript
-// 关键修复：确保输入框没有被禁用
-const ensureInputEnabled = () => {
-  if (numberInputRef.current) {
-    const input = numberInputRef.current;
-    
-    if (input.disabled) {
-      console.warn('EpisodeForm: 输入框被禁用，正在启用');
-      input.disabled = false;
-    }
-    
-    // 确保可以接收事件
-    const computedStyle = window.getComputedStyle(input);
-    if (computedStyle.pointerEvents === 'none') {
-      console.warn('EpisodeForm: 输入框pointer-events为none，正在修复');
-      input.style.pointerEvents = 'auto';
-    }
-  }
-};
-```
-
-### 测试修复
-请测试以下场景以确保焦点问题已修复：
-1. 添加剧集 → 删除剧集 → 再次添加新剧集（输入框应该能正常点击和输入）
-2. 批量删除剧集 → 添加新剧集（输入框应该能正常点击和输入）
-3. 多次重复删除和添加操作，确保稳定性
-4. 验证光标在输入框中正常闪烁
-
-### 测试方法
-
-#### 测试场景1：单个删除
-1. 进入"写入"板块
-2. 选择一个番剧
-3. 添加一个剧集
-4. 删除该剧集
-5. 立即点击"添加新行"按钮
-6. **预期结果**：弹窗打开，输入框可以立即点击和输入
-
-#### 测试场景2：批量删除
-1. 进入"写入"板块
-2. 选择一个番剧
-3. 添加多个剧集
-4. 勾选多个剧集进行批量删除
-5. 立即点击"添加新行"按钮
-6. **预期结果**：弹窗打开，输入框可以立即点击和输入
-
-#### 测试场景3：多次操作
-1. 重复进行添加、删除、再添加的操作
-2. **预期结果**：每次添加新剧集时，输入框都能正常工作
-
-## 测试数据设置指南
-
-### 文件位置
-番剧信息JSON文件应该放在Electron的用户数据目录：
-
-**Windows**: `%APPDATA%\anime-manager\anime-data.json`
-- 示例: `C:\Users\你的用户名\AppData\Roaming\anime-manager\anime-data.json`
-
-**macOS**: `~/Library/Application Support/anime-manager/anime-data.json`
-
-**Linux**: `~/.config/anime-manager/anime-data.json`
-
-**重要**: 目录名基于package.json中的`name`字段 (`anime-manager`)，不是应用显示名称。
-
-### 快速设置方法
-
-#### 方法1：使用批处理脚本（Windows）
-运行 `setup-test-data.bat` 自动复制文件。
-
-#### 方法2：手动操作
-1. 打开文件资源管理器
-2. 在地址栏输入 `%APPDATA%` 并按回车
-3. 创建 `anime-manager` 文件夹（如果不存在）
-4. 将 `example-anime-data.json` 复制到该文件夹，重命名为 `anime-data.json`
-
-#### 方法3：通过程序自动创建
-如果文件不存在，程序首次启动时会创建空的 `anime-data.json` 文件。
-
-### 数据结构说明
-JSON文件必须符合以下格式：
-
-```json
-{
-  "version": "1.0.0",
-  "animeList": [
-    {
-      "id": "唯一ID",
-      "title": "番剧标题",
-      "watchMethod": "观看方式", // "本地播放器"、"在线观看"、"下载观看"
-      "description": "描述（可选）",
-      "tags": ["标签1", "标签2"],
-      "episodes": [
-        {
-          "id": "剧集ID",
-          "number": 1,
-          "title": "剧集标题",
-          "url": "播放地址",
-          "watched": false,
-          "notes": "备注（可选）"
-        }
-      ],
-      "createdAt": "创建时间",
-      "updatedAt": "更新时间"
-    }
-  ]
+interface Episode {
+  id: string
+  number: number
+  title: string
+  url: string
+  watched: boolean
+  notes?: string
 }
 ```
 
-### 示例文件内容
-`example-anime-data.json` 包含5个测试番剧：
+### 配置文件
+- 数据存储位置: `%APPDATA%/AnimeManager/data.json`
+- 支持自定义数据文件夹路径
+- 自动备份机制
 
-1. **咒术回战 第二季** - 3集，在线观看
-2. **葬送的芙莉莲** - 4集，本地播放器  
-3. **间谍过家家** - 3集，下载观看
-4. **鬼灭之刃 游郭篇** - 5集，在线观看
-5. **孤独摇滚！** - 3集，本地播放器
+## 🔧 开发脚本
 
-### 验证步骤
-1. 放置文件到正确位置
-2. 运行 `dist\win-unpacked\Anime Manager.exe`
-3. 程序应该显示5个番剧卡片
-4. 点击任意番剧应该显示剧集列表
+项目包含以下开发辅助脚本：
 
-### 故障排除
-如果程序显示空白：
-1. 检查文件路径是否正确
-2. 检查JSON格式是否有效（可以使用JSON验证工具）
-3. 查看开发者工具控制台（F12）的错误信息
-4. 确保文件编码为UTF-8
+### 主要脚本
+- `generate-unpacked.bat` - 生成未打包版本
+- `cleanup.bat` - 清理项目文件
+- `setup.bat` - 安装程序脚本
 
-## 开发指南
+### 启动脚本
+- `start-app.bat` - 启动应用程序
+- `start-build.bat` - 启动构建版本
 
-### 技术栈
-- **前端**: React 18, TypeScript
-- **构建工具**: Vite
-- **桌面框架**: Electron
-- **样式**: Tailwind CSS
-- **打包**: electron-builder
+### 测试脚本
+- `test-run.bat` - 运行环境测试
+- `test-unpacked.bat` - 测试未打包版本
 
-### 代码规范
-- 使用 TypeScript 严格模式
-- 遵循 ESLint 规则
-- 组件化架构
+## 📚 文档
 
-### 测试
-运行测试：
+- `docs/design/` - 设计文档和架构说明
+- `docs/plans/` - 详细的开发计划和实现记录
+- `installation-guide.md` - 安装指南
+- `environment-check.md` - 环境检查文档
+
+## 🧪 测试
+
+项目包含完整的测试套件：
+
 ```bash
+# 运行测试（如果配置了测试框架）
 npm test
 ```
 
-## 构建配置
+测试覆盖：
+- 数据验证逻辑
+- 文件系统操作
+- 组件渲染
+- 状态管理
 
-### 主要配置
-- `package.json` - 项目配置和脚本
-- `vite.config.ts` - Vite 构建配置
-- `tsconfig.json` - TypeScript 配置
-- `electron-builder` - 应用程序打包配置
+## 🤝 贡献指南
 
-### 构建选项
-- `npm run build` - 构建应用代码
-- `npm run pack` - 生成未打包版本
-- `npm run dist` - 生成安装包
-- `npm run dist:win` - 生成 Windows 安装包
+欢迎贡献代码！请遵循以下步骤：
 
-## 新增功能说明
+1. Fork 本仓库
+2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 开启 Pull Request
 
-### 剧集编辑保存功能改进（2026-02-21）
+### 代码规范
+- 使用 TypeScript 严格模式
+- 遵循 React Hooks 最佳实践
+- 保持组件简洁和可复用
+- 添加必要的注释和文档
 
-**问题修复**：解决了用户编辑剧集后需要手动保存的问题，添加了明确的保存提示系统。
+## 📄 许可证
 
-**新增功能**：
-1. **未保存修改提示横幅** - 页面顶部显示黄色横幅，提示有未保存修改
-2. **增强状态显示** - 文件状态栏显示"⚠️ 有未保存的修改"和"✓ 文件已保存"
-3. **操作后Toast提示** - 编辑/添加/删除剧集后显示"修改已保存到内存"提示
-4. **保存按钮高亮** - 有未保存修改时保存按钮变为蓝色高亮
-5. **页面切换保护** - 离开页面时提示保存未保存的修改
-6. **应用关闭保护** - 关闭应用时提示保存未保存的修改
+本项目采用 MIT 许可证 - 查看 [LICENSE.txt](LICENSE.txt) 文件了解详情。
 
-**使用流程**：
-1. 编辑剧集 → 点击"更新剧集"
-2. 显示Toast："修改已保存到内存"
-3. 状态栏变为："⚠️ 有未保存的修改"
-4. 保存按钮高亮显示
-5. 点击保存 → 数据持久化
-6. 状态恢复："✓ 文件已保存"
+## 🙏 致谢
 
-### WritePage状态管理重构（2026-02-23）
+- **AI 工具**: 感谢 AI 辅助工具在代码生成和问题解决中的帮助
+- **开源社区**: 感谢所有使用的开源项目和库
+- **贡献者**: 感谢所有为项目做出贡献的人
 
-**问题修复**：解决了WritePage添加新行功能的状态同步问题，简化了状态管理架构。
+## 📞 支持
 
-**重构内容**：
-1. **状态管理简化** - 将双重状态管理（selectedAnime + state.animeList）改为单一状态管理（selectedAnimeId + 计算属性）
-2. **移除hack代码** - 去除了所有setTimeout和焦点处理hack
-3. **错误处理增强** - 添加了更完善的错误处理和恢复机制
-4. **性能优化** - 使用useMemo优化计算属性性能
+遇到问题？请：
+1. 查看 [文档](docs/) 和 [问题记录](docs/plans/)
+2. 检查现有 Issue
+3. 创建新的 Issue 并详细描述问题
 
-**技术改进**：
-- 代码行数减少约40行
-- 状态同步逻辑完全移除
-- 添加流程更简洁可靠
-- 类型安全性更好
+---
 
-## 文档
-- [设计文档](docs/plans/) - 项目设计和实施计划
-- [使用说明](docs/unpacked-usage.md) - 未打包版本使用指南
-- [测试报告](test-reports/) - 应用程序测试结果
-
-## 构建信息
-- 构建时间：2026年2月25日 19:02
-- 修复版本：v1.0.0-focus-fix-v2
-- Electron版本：25.9.8
-- 包含修复：剧集管理输入框焦点问题
-
-## 许可证
-MIT License
+**项目状态**: 🟢 活跃开发中  
+**最后更新**: 2026-03-01  
+**版本**: 1.0.0
