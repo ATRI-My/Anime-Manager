@@ -113,7 +113,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
       setState(prev => ({
         ...prev,
         animeList: appData.animeList || [],
-        settings: DEFAULT_SETTINGS,
+        settings: prev.settings ?? DEFAULT_SETTINGS,
         currentFilePath: targetFilePath,
         isModified: false,
         loading: false,
@@ -187,7 +187,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
     setState(prev => ({
       ...prev,
       animeList: DEFAULT_APP_DATA.animeList,
-      settings: DEFAULT_SETTINGS,
+      settings: prev.settings ?? DEFAULT_SETTINGS,
       currentFilePath: null,
       isModified: false,
       error: null,
