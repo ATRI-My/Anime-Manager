@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Toast as ToastType } from '../../contexts/ToastContext';
+import { useTheme } from '../../hooks';
 
 interface ToastProps {
   toast: ToastType;
@@ -10,6 +11,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [progress, setProgress] = useState(100);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     // 淡入动画
@@ -49,51 +51,100 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   };
 
   const getTypeStyles = () => {
-    switch (toast.type) {
-      case 'success':
-        return {
-          bg: 'bg-green-50',
-          border: 'border-green-200',
-          text: 'text-green-800',
-          icon: (
-            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          )
-        };
-      case 'error':
-        return {
-          bg: 'bg-red-50',
-          border: 'border-red-200',
-          text: 'text-red-800',
-          icon: (
-            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          )
-        };
-      case 'warning':
-        return {
-          bg: 'bg-yellow-50',
-          border: 'border-yellow-200',
-          text: 'text-yellow-800',
-          icon: (
-            <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.342 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          )
-        };
-      case 'info':
-        return {
-          bg: 'bg-blue-50',
-          border: 'border-blue-200',
-          text: 'text-blue-800',
-          icon: (
-            <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          )
-        };
+    if (isDark) {
+      switch (toast.type) {
+        case 'success':
+          return {
+            bg: 'bg-green-900',
+            border: 'border-green-700',
+            text: 'text-green-100',
+            icon: (
+              <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            )
+          };
+        case 'error':
+          return {
+            bg: 'bg-red-900',
+            border: 'border-red-700',
+            text: 'text-red-100',
+            icon: (
+              <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )
+          };
+        case 'warning':
+          return {
+            bg: 'bg-yellow-900',
+            border: 'border-yellow-700',
+            text: 'text-yellow-100',
+            icon: (
+              <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.342 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            )
+          };
+        case 'info':
+          return {
+            bg: 'bg-blue-900',
+            border: 'border-blue-700',
+            text: 'text-blue-100',
+            icon: (
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )
+          };
+      }
+    } else {
+      switch (toast.type) {
+        case 'success':
+          return {
+            bg: 'bg-green-50',
+            border: 'border-green-200',
+            text: 'text-green-800',
+            icon: (
+              <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            )
+          };
+        case 'error':
+          return {
+            bg: 'bg-red-50',
+            border: 'border-red-200',
+            text: 'text-red-800',
+            icon: (
+              <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )
+          };
+        case 'warning':
+          return {
+            bg: 'bg-yellow-50',
+            border: 'border-yellow-200',
+            text: 'text-yellow-800',
+            icon: (
+              <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.342 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            )
+          };
+        case 'info':
+          return {
+            bg: 'bg-blue-50',
+            border: 'border-blue-200',
+            text: 'text-blue-800',
+            icon: (
+              <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )
+          };
+      }
     }
   };
 
@@ -128,7 +179,7 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
             e.stopPropagation();
             handleClose();
           }}
-          className="ml-4 flex-shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none"
+          className={`ml-4 flex-shrink-0 focus:outline-none ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -138,12 +189,13 @@ const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
       
       {/* 进度条 */}
       {toast.duration > 0 && (
-        <div className="mt-2 h-1 bg-gray-200 rounded-full overflow-hidden">
+        <div className={`mt-2 h-1 rounded-full overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
           <div
             className={`h-full transition-all duration-300 ${
-              toast.type === 'success' ? 'bg-green-500' :
-              toast.type === 'error' ? 'bg-red-500' :
-              toast.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+              toast.type === 'success' ? (isDark ? 'bg-green-400' : 'bg-green-500') :
+              toast.type === 'error' ? (isDark ? 'bg-red-400' : 'bg-red-500') :
+              toast.type === 'warning' ? (isDark ? 'bg-yellow-400' : 'bg-yellow-500') : 
+              (isDark ? 'bg-blue-400' : 'bg-blue-500')
             }`}
             style={{ width: `${progress}%` }}
           />

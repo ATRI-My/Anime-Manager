@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import FormValidation from './FormValidation';
 import useFormValidation from '../../hooks/useFormValidation';
+import { useTheme, useTranslation } from '../../hooks';
 
 interface EpisodeFormData {
   number: number;
@@ -38,6 +39,8 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
   });
   
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const { isDark, text, input } = useTheme();
+  const { t } = useTranslation();
   
   // 尽可能强地保证标题输入框可用且获得焦点（兼容删除后焦点异常的情况）
   useEffect(() => {
@@ -70,17 +73,17 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
       number: {
         required: true,
         validate: (value: number) => value > 0,
-        message: '剧集编号必须大于0'
+        message: t('episode.validation.numberRequired')
       },
       title: {
         required: true,
         validate: (value: string) => value.trim().length > 0,
-        message: '剧集标题不能为空'
+        message: t('episode.validation.titleRequired')
       },
       url: {
         required: true,
         validate: (value: string) => value.trim().length > 0,
-        message: '剧集链接不能为空'
+        message: t('episode.validation.urlRequired')
       }
     } : {}
   );
@@ -126,22 +129,22 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
     <form onSubmit={handleSubmit} className={`space-y-4 ${className}`}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">
-            剧集编号 *
+          <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+            {t('episode.numberLabel')}
           </label>
           <input
             type="number"
             name="number"
             value={formData.number}
             onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
             min="1"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1">
-            剧集标题 *
+          <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+            {t('episode.titleLabel')}
           </label>
           <input
             type="text"
@@ -149,22 +152,22 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
             value={formData.title}
             onChange={handleChange}
             ref={titleInputRef}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="输入剧集标题"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+            placeholder={t('episode.titlePlaceholder')}
           />
         </div>
         
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium mb-1">
-            剧集链接 *
+          <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+            {t('episode.urlLabel')}
           </label>
           <input
             type="url"
             name="url"
             value={formData.url}
             onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="https://example.com/episode-1"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+            placeholder={t('episode.urlPlaceholder')}
           />
         </div>
         
@@ -175,23 +178,23 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
               name="watched"
               checked={formData.watched}
               onChange={handleChange}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className={`rounded text-blue-600 focus:ring-blue-500 ${isDark ? 'border-gray-600 bg-neutral-800' : 'border-gray-300'}`}
             />
-            <span className="text-sm font-medium">已观看</span>
+            <span className={`text-sm font-medium ${text.secondary}`}>{t('episode.watched')}</span>
           </label>
         </div>
         
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium mb-1">
-            备注
+          <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+            {t('episode.notesLabel')}
           </label>
           <textarea
             name="notes"
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="可选备注信息"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+            placeholder={t('episode.notesPlaceholder')}
           />
         </div>
       </div>
@@ -203,24 +206,24 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
           type="submit"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          {isEditing ? '更新' : '添加'}
+          {isEditing ? t('episode.submitUpdate') : t('episode.submitAdd')}
         </button>
         
         <button
           type="button"
           onClick={handleReset}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${isDark ? 'bg-neutral-700 text-gray-200 hover:bg-neutral-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
         >
-          重置
+          {t('episode.reset')}
         </button>
         
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${isDark ? 'bg-neutral-700 text-gray-200 hover:bg-neutral-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
           >
-            取消
+            {t('anime.cancel')}
           </button>
         )}
         
@@ -230,7 +233,7 @@ const InlineEpisodeForm: React.FC<InlineEpisodeFormProps> = ({
             onClick={onDelete}
             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
           >
-            删除
+            {t('episode.delete')}
           </button>
         )}
       </div>

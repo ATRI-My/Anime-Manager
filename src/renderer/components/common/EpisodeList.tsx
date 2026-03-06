@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Episode } from '../../../shared/types';
+import { useTheme, useTranslation } from '../../hooks';
 
 interface EpisodeListProps {
   episodes: Episode[];
@@ -17,6 +18,8 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
   className = ''
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { isDark, bg, text, border } = useTheme();
+  const { t } = useTranslation();
 
   const handleCopyUrl = async (e: React.MouseEvent, url: string, episodeId: string) => {
     e.stopPropagation();
@@ -66,46 +69,46 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
   };
 
   const getWatchedStatus = (watched: boolean) => {
-    return watched ? 'text-green-600' : 'text-gray-400';
+    return watched ? 'text-green-600' : (isDark ? 'text-gray-400' : 'text-gray-400');
   };
 
   return (
     <div className={`${className}`}>
-       <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+       <div className={`overflow-x-auto rounded-lg border ${border.primary}`}>
+        <table className={`min-w-full divide-y ${border.primary}`}>
+          <thead className={bg.secondary}>
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                集数
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnNumber')}
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                标题
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnTitle')}
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                状态
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnStatus')}
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                操作
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnAction')}
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className={`${bg.card} divide-y ${border.primary}`}>
             {episodes.map((episode) => (
               <tr 
                 key={episode.id} 
-                className="hover:bg-gray-50 cursor-pointer"
+                className={`${bg.hover} cursor-pointer`}
                 onClick={() => handleRowClick(episode)}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-blue-800 font-bold">{episode.number}</span>
+                    <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${isDark ? 'bg-blue-900/50' : 'bg-blue-100'}`}>
+                      <span className={isDark ? 'text-blue-200 font-bold' : 'text-blue-800 font-bold'}>{episode.number}</span>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">{episode.title}</div>
-                  <div className="text-xs text-gray-500 truncate max-w-xs" title={episode.url}>
+                  <div className={`text-sm font-medium ${text.primary}`}>{episode.title}</div>
+                  <div className={`text-xs truncate max-w-xs ${text.muted}`} title={episode.url}>
                     {episode.url}
                   </div>
                 </td>
@@ -124,7 +127,7 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
                       )}
                     </svg>
                     <span className={`text-sm ${getWatchedStatus(episode.watched)}`}>
-                      {episode.watched ? '已观看' : '未观看'}
+                      {episode.watched ? t('episode.watched') : t('episode.unwatched')}
                     </span>
                   </div>
                 </td>
@@ -134,19 +137,19 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
                       onClick={(e) => handleCopyUrl(e, episode.url, episode.id)}
                       className={`px-3 py-1 rounded text-xs font-medium ${
                         copiedId === episode.id 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                          ? isDark ? 'bg-green-800/50 text-green-200' : 'bg-green-100 text-green-800' 
+                          : isDark ? 'bg-blue-800/50 text-blue-200 hover:bg-blue-700/50' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
                       }`}
-                      title="复制链接"
+                      title={t('episode.copyLinkTitle')}
                     >
-                      {copiedId === episode.id ? '已复制' : '复制'}
+                      {copiedId === episode.id ? t('episode.copied') : t('episode.copy')}
                     </button>
                     <button
                       onClick={(e) => handleOpenUrl(e, episode.url)}
-                      className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs font-medium hover:bg-green-200"
-                      title="打开链接"
+                      className={isDark ? 'px-3 py-1 bg-green-800/50 text-green-200 rounded text-xs font-medium hover:bg-green-700/50' : 'px-3 py-1 bg-green-100 text-green-800 rounded text-xs font-medium hover:bg-green-200'}
+                      title={t('episode.openLinkTitle')}
                     >
-                      打开
+                      {t('episode.open')}
                     </button>
                   </div>
                 </td>
@@ -158,11 +161,11 @@ const EpisodeList: React.FC<EpisodeListProps> = ({
       
       {episodes.length === 0 && (
         <div className="text-center py-12">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`mx-auto h-12 w-12 ${text.muted}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">暂无剧集</h3>
-          <p className="mt-1 text-sm text-gray-500">还没有添加任何剧集。</p>
+          <h3 className={`mt-2 text-sm font-medium ${text.primary}`}>{t('episode.noEpisodes')}</h3>
+          <p className={`mt-1 text-sm ${text.muted}`}>{t('episode.noEpisodesHint')}</p>
         </div>
       )}
     </div>

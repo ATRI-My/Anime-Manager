@@ -1,4 +1,6 @@
-import { AppData, Settings, VirtualScrollConfig } from './types'
+import { AppData, Settings, SingleToolConfig, VirtualScrollConfig } from './types'
+
+export const SUPPORTED_LOCALES = ['zh-CN', 'en-US'] as const
 
 export const WATCH_METHODS = ['本地播放器', '在线观看', '下载观看']
 
@@ -27,16 +29,22 @@ export const DEFAULT_VIRTUAL_SCROLL_CONFIG: VirtualScrollConfig = {
   }
 }
 
+const createDefaultSingleToolConfig = (): SingleToolConfig => ({
+  enabled: false,
+  name: '',
+  path: '',
+  arguments: ''
+})
+
 export const DEFAULT_SETTINGS: Settings = {
   toolConfig: {
-    useCustomTool: false,
-    customTool: {
-      name: '',
-      path: '',
-      arguments: ''
-    }
+    url: createDefaultSingleToolConfig(),
+    magnet: createDefaultSingleToolConfig(),
+    localFile: createDefaultSingleToolConfig()
   },
-  virtualScrollConfig: DEFAULT_VIRTUAL_SCROLL_CONFIG
+  virtualScrollConfig: DEFAULT_VIRTUAL_SCROLL_CONFIG,
+  theme: 'light',
+  language: 'zh-CN'
 }
 
 export const DEFAULT_APP_DATA: AppData = {

@@ -1,18 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { AppData } from '../shared/types'
-
-export interface ToolConfig {
-  useCustomTool: boolean
-  customTool: {
-    name: string
-    path: string
-    arguments: string
-  }
-}
-
-export interface Settings {
-  toolConfig: ToolConfig
-}
+import { AppData, Settings, ToolConfig } from '../shared/types'
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // 文件操作API

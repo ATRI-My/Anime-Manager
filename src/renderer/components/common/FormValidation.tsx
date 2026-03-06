@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme, useTranslation } from '../../hooks';
 
 interface FormValidationProps {
   errors: string[];
@@ -6,13 +7,16 @@ interface FormValidationProps {
 }
 
 const FormValidation: React.FC<FormValidationProps> = ({ errors, className = '' }) => {
+  const { isDark } = useTheme();
+  const { t } = useTranslation();
+
   if (errors.length === 0) {
     return null;
   }
 
   return (
     <div 
-      className={`bg-red-50 border border-red-200 rounded-md p-4 mb-6 ${className}`}
+      className={`rounded-md p-4 mb-6 border ${className} ${isDark ? 'bg-red-900/30 border-red-700' : 'bg-red-50 border-red-200'}`}
       data-testid="error-list"
     >
       <div className="flex items-start">
@@ -22,10 +26,10 @@ const FormValidation: React.FC<FormValidationProps> = ({ errors, className = '' 
           </svg>
         </div>
         <div className="ml-3">
-          <h3 className="text-sm font-medium text-red-800">
-            表单有 {errors.length} 个错误需要修复
+          <h3 className={`text-sm font-medium ${isDark ? 'text-red-200' : 'text-red-800'}`}>
+            {t('validation.errorsCount', { count: String(errors.length) })}
           </h3>
-          <div className="mt-2 text-sm text-red-700">
+          <div className={`mt-2 text-sm ${isDark ? 'text-red-300' : 'text-red-700'}`}>
             <ul className="list-disc pl-5 space-y-1">
               {errors.map((error, index) => (
                 <li key={index}>{error}</li>

@@ -48,16 +48,51 @@ const accessAsync = (0, util_1.promisify)(fs_1.default.access);
 const mkdirAsync = (0, util_1.promisify)(fs_1.default.mkdir);
 const SETTINGS_FILE_NAME = 'settings.json';
 const ANIME_DATA_FILE_NAME = 'anime-data.json';
-const defaultSettings = {
-    toolConfig: {
-        useCustomTool: false,
-        customTool: {
-            name: '',
-            path: '',
-            arguments: '{url}'
-        }
+function migrateToolConfig(config) {
+    // 旧结构：包含 useCustomTool 字段
+    if (config && typeof config === 'object' && 'useCustomTool' in config) {
+        const old = config;
+        return {
+            url: {
+                enabled: false,
+                name: '',
+                path: '',
+                arguments: '{url}'
+            },
+            magnet: {
+                enabled: false,
+                name: '',
+                path: '',
+                arguments: '{url}'
+            },
+            localFile: {
+                enabled: old.useCustomTool,
+                name: old.customTool?.name ?? '',
+                path: old.customTool?.path ?? '',
+                arguments: old.customTool?.arguments ?? '{url}'
+            }
+        };
     }
-};
+    // 新结构但缺失字段时，合并默认值
+    const merged = {
+        url: { ...constants_1.DEFAULT_SETTINGS.toolConfig.url, ...(config?.url ?? {}) },
+        magnet: { ...constants_1.DEFAULT_SETTINGS.toolConfig.magnet, ...(config?.magnet ?? {}) },
+        localFile: { ...constants_1.DEFAULT_SETTINGS.toolConfig.localFile, ...(config?.localFile ?? {}) },
+        lastTestResults: config?.lastTestResults
+    };
+    return merged;
+}
+function migrateSettings(data) {
+    if (!data || typeof data !== 'object') {
+        return constants_1.DEFAULT_SETTINGS;
+    }
+    const toolConfig = migrateToolConfig(data.toolConfig ?? {});
+    return {
+        ...constants_1.DEFAULT_SETTINGS,
+        ...data,
+        toolConfig
+    };
+}
 function getSettingsPath() {
     const userDataPath = electron_1.app.getPath('userData');
     return path_1.default.join(userDataPath, SETTINGS_FILE_NAME);
@@ -73,7 +108,7 @@ async function ensureSettingsFileExists() {
     }
     catch {
         await mkdirAsync(path_1.default.dirname(settingsPath), { recursive: true });
-        await writeFileAsync(settingsPath, JSON.stringify(defaultSettings, null, 2));
+        await writeFileAsync(settingsPath, JSON.stringify(constants_1.DEFAULT_SETTINGS, null, 2));
     }
 }
 async function ensureAnimeDataFileExists() {
@@ -135,11 +170,12 @@ function registerFileSystemHandlers() {
             await ensureSettingsFileExists();
             const settingsPath = getSettingsPath();
             const data = await readFileAsync(settingsPath, 'utf8');
-            return JSON.parse(data);
+            const parsed = JSON.parse(data);
+            return migrateSettings(parsed);
         }
         catch (error) {
             console.error('获取设置失败，返回默认设置:', error);
-            return defaultSettings;
+            return constants_1.DEFAULT_SETTINGS;
         }
     });
     electron_1.ipcMain.handle('save-settings', async (_event, settings) => {
@@ -156,12 +192,20 @@ function registerFileSystemHandlers() {
     });
     electron_1.ipcMain.handle('open-with-tool', async (_event, url, toolConfig) => {
         try {
-            if (toolConfig.useCustomTool && toolConfig.customTool.path) {
+            const linkType = (() => {
+                if (url.startsWith('magnet:'))
+                    return 'magnet';
+                if (/^https?:\/\//.test(url))
+                    return 'url';
+                return 'localFile';
+            })();
+            const typeConfig = toolConfig[linkType];
+            if (typeConfig?.enabled && typeConfig.path) {
                 const { exec } = await Promise.resolve().then(() => __importStar(require('child_process')));
                 const execAsync = (0, util_1.promisify)(exec);
-                let command = `"${toolConfig.customTool.path}"`;
-                if (toolConfig.customTool.arguments) {
-                    command += ' ' + toolConfig.customTool.arguments.replace(/{url}/g, `"${url}"`);
+                let command = `"${typeConfig.path}"`;
+                if (typeConfig.arguments) {
+                    command += ' ' + typeConfig.arguments.replace(/{url}/g, `"${url}"`);
                 }
                 else {
                     command += ` "${url}"`;
@@ -169,27 +213,16 @@ function registerFileSystemHandlers() {
                 await execAsync(command);
                 return { success: true };
             }
-            else {
-                // 检查是否是本地文件路径
-                const isLocalFile = url.startsWith('file://') ||
-                    /^[a-zA-Z]:[\\/]/.test(url) || // Windows路径如 C:\ 或 C:/
-                    url.startsWith('/') || // Unix路径
-                    url.startsWith('\\\\'); // 网络路径
-                if (isLocalFile) {
-                    // 使用openPath打开本地文件
-                    const result = await electron_1.shell.openPath(url);
-                    if (result) {
-                        // openPath返回空字符串表示成功，非空字符串表示错误
-                        return { success: false, error: `无法打开文件: ${result}` };
-                    }
-                    return { success: true };
+            // 未启用自定义工具时使用默认方式
+            if (linkType === 'localFile') {
+                const result = await electron_1.shell.openPath(url);
+                if (result) {
+                    return { success: false, error: `无法打开文件: ${result}` };
                 }
-                else {
-                    // 使用openExternal打开URL
-                    await electron_1.shell.openExternal(url);
-                    return { success: true };
-                }
+                return { success: true };
             }
+            await electron_1.shell.openExternal(url);
+            return { success: true };
         }
         catch (error) {
             console.error('打开失败:', error);

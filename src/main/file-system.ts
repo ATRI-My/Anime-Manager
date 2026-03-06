@@ -2,8 +2,8 @@ import { ipcMain, app, shell, dialog } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
-import { AppData } from '../shared/types'
-import { DEFAULT_APP_DATA } from '../shared/constants'
+import { AppData, ToolConfig } from '../shared/types'
+import { DEFAULT_APP_DATA, DEFAULT_SETTINGS } from '../shared/constants'
 
 const readFileAsync = promisify(fs.readFile)
 const writeFileAsync = promisify(fs.writeFile)
@@ -13,7 +13,9 @@ const mkdirAsync = promisify(fs.mkdir)
 const SETTINGS_FILE_NAME = 'settings.json'
 const ANIME_DATA_FILE_NAME = 'anime-data.json'
 
-interface ToolConfig {
+type Settings = typeof DEFAULT_SETTINGS
+
+type OldToolConfig = {
   useCustomTool: boolean
   customTool: {
     name: string
@@ -22,18 +24,54 @@ interface ToolConfig {
   }
 }
 
-interface Settings {
-  toolConfig: ToolConfig
+function migrateToolConfig(config: any): ToolConfig {
+  // 旧结构：包含 useCustomTool 字段
+  if (config && typeof config === 'object' && 'useCustomTool' in config) {
+    const old = config as OldToolConfig
+    return {
+      url: {
+        enabled: false,
+        name: '',
+        path: '',
+        arguments: '{url}'
+      },
+      magnet: {
+        enabled: false,
+        name: '',
+        path: '',
+        arguments: '{url}'
+      },
+      localFile: {
+        enabled: old.useCustomTool,
+        name: old.customTool?.name ?? '',
+        path: old.customTool?.path ?? '',
+        arguments: old.customTool?.arguments ?? '{url}'
+      }
+    }
+  }
+
+  // 新结构但缺失字段时，合并默认值
+  const merged: ToolConfig = {
+    url: { ...DEFAULT_SETTINGS.toolConfig.url, ...(config?.url ?? {}) },
+    magnet: { ...DEFAULT_SETTINGS.toolConfig.magnet, ...(config?.magnet ?? {}) },
+    localFile: { ...DEFAULT_SETTINGS.toolConfig.localFile, ...(config?.localFile ?? {}) },
+    lastTestResults: config?.lastTestResults
+  }
+
+  return merged
 }
 
-const defaultSettings: Settings = {
-  toolConfig: {
-    useCustomTool: false,
-    customTool: {
-      name: '',
-      path: '',
-      arguments: '{url}'
-    }
+function migrateSettings(data: any): Settings {
+  if (!data || typeof data !== 'object') {
+    return DEFAULT_SETTINGS
+  }
+
+  const toolConfig = migrateToolConfig((data as any).toolConfig ?? {})
+
+  return {
+    ...DEFAULT_SETTINGS,
+    ...data,
+    toolConfig
   }
 }
 
@@ -53,7 +91,7 @@ async function ensureSettingsFileExists(): Promise<void> {
     await accessAsync(settingsPath, fs.constants.F_OK)
   } catch {
     await mkdirAsync(path.dirname(settingsPath), { recursive: true })
-    await writeFileAsync(settingsPath, JSON.stringify(defaultSettings, null, 2))
+    await writeFileAsync(settingsPath, JSON.stringify(DEFAULT_SETTINGS, null, 2))
   }
 }
 
@@ -118,10 +156,11 @@ export function registerFileSystemHandlers(): void {
       await ensureSettingsFileExists()
       const settingsPath = getSettingsPath()
       const data = await readFileAsync(settingsPath, 'utf8')
-      return JSON.parse(data)
+      const parsed = JSON.parse(data)
+      return migrateSettings(parsed)
     } catch (error) {
       console.error('获取设置失败，返回默认设置:', error)
-      return defaultSettings
+      return DEFAULT_SETTINGS
     }
   })
 
@@ -139,41 +178,41 @@ export function registerFileSystemHandlers(): void {
 
   ipcMain.handle('open-with-tool', async (_event, url: string, toolConfig: ToolConfig) => {
     try {
-      if (toolConfig.useCustomTool && toolConfig.customTool.path) {
+      const linkType = (() => {
+        if (url.startsWith('magnet:')) return 'magnet' as const
+        if (/^https?:\/\//.test(url)) return 'url' as const
+        return 'localFile' as const
+      })()
+
+      const typeConfig = toolConfig[linkType]
+
+      if (typeConfig?.enabled && typeConfig.path) {
         const { exec } = await import('child_process')
         const execAsync = promisify(exec)
-        
-        let command = `"${toolConfig.customTool.path}"`
-        
-        if (toolConfig.customTool.arguments) {
-          command += ' ' + toolConfig.customTool.arguments.replace(/{url}/g, `"${url}"`)
+
+        let command = `"${typeConfig.path}"`
+
+        if (typeConfig.arguments) {
+          command += ' ' + typeConfig.arguments.replace(/{url}/g, `"${url}"`)
         } else {
           command += ` "${url}"`
         }
-        
+
         await execAsync(command)
         return { success: true }
-      } else {
-        // 检查是否是本地文件路径
-        const isLocalFile = url.startsWith('file://') || 
-                           /^[a-zA-Z]:[\\/]/.test(url) || // Windows路径如 C:\ 或 C:/
-                           url.startsWith('/') || // Unix路径
-                           url.startsWith('\\\\'); // 网络路径
-        
-        if (isLocalFile) {
-          // 使用openPath打开本地文件
-          const result = await shell.openPath(url)
-          if (result) {
-            // openPath返回空字符串表示成功，非空字符串表示错误
-            return { success: false, error: `无法打开文件: ${result}` }
-          }
-          return { success: true }
-        } else {
-          // 使用openExternal打开URL
-          await shell.openExternal(url)
-          return { success: true }
-        }
       }
+
+      // 未启用自定义工具时使用默认方式
+      if (linkType === 'localFile') {
+        const result = await shell.openPath(url)
+        if (result) {
+          return { success: false, error: `无法打开文件: ${result}` }
+        }
+        return { success: true }
+      }
+
+      await shell.openExternal(url)
+      return { success: true }
     } catch (error) {
       console.error('打开失败:', error)
       const errorMessage = error instanceof Error ? error.message : String(error)

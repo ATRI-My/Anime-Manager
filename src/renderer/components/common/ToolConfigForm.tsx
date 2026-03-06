@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ToolConfig } from '../../../shared/types';
+import { LinkType, ToolConfig } from '../../../shared/types';
+import { useTheme, useTranslation } from '../../hooks';
 
 interface ToolConfigFormProps {
   config: ToolConfig;
   onSave: (config: ToolConfig) => Promise<{ success: boolean; error?: string }>;
-  onTest: (config: ToolConfig) => Promise<{ success: boolean; error?: string }>;
+  onTest: (config: ToolConfig, linkType: LinkType) => Promise<{ success: boolean; error?: string }>;
   className?: string;
 }
 
@@ -19,6 +20,15 @@ const ToolConfigForm: React.FC<ToolConfigFormProps> = ({
   const [isTesting, setIsTesting] = useState(false);
   const [saveResult, setSaveResult] = useState<{ success: boolean; message: string } | null>(null);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [activeType, setActiveType] = useState<LinkType>('url');
+  const { isDark, bg, text, border, input } = useTheme();
+  const { t } = useTranslation();
+
+  const typeLabels: Record<LinkType, string> = {
+    url: t('toolConfig.linkTypeUrl'),
+    magnet: t('toolConfig.linkTypeMagnet'),
+    localFile: t('toolConfig.linkTypeLocalFile'),
+  };
 
   useEffect(() => {
     setConfig(initialConfig);
@@ -33,12 +43,12 @@ const ToolConfigForm: React.FC<ToolConfigFormProps> = ({
       const result = await onSave(config);
       setSaveResult({
         success: result.success,
-        message: result.success ? '配置保存成功' : (result.error || '保存失败')
+        message: result.success ? t('toolConfig.saveSuccess') : (result.error || t('toolConfig.saveFailed'))
       });
     } catch (error) {
       setSaveResult({
         success: false,
-        message: error instanceof Error ? error.message : '保存配置时发生错误'
+        message: error instanceof Error ? error.message : t('toolConfig.saveError')
       });
     } finally {
       setIsSaving(false);
@@ -46,31 +56,20 @@ const ToolConfigForm: React.FC<ToolConfigFormProps> = ({
   };
 
   const handleTestTool = async () => {
+    const currentType = activeType;
     setIsTesting(true);
     setTestResult(null);
     
     try {
-      const result = await onTest(config);
+      const result = await onTest(config, currentType);
       setTestResult({
         success: result.success,
-        message: result.success ? '工具测试成功' : (result.error || '测试失败')
+        message: result.success ? t('toolConfig.testSuccess') : (result.error || t('toolConfig.testFailed'))
       });
-      
-      // 更新配置中的测试结果
-      if (result.success) {
-        setConfig({
-          ...config,
-          lastTestResult: {
-            success: true,
-            message: '测试成功',
-            timestamp: new Date().toISOString()
-          }
-        });
-      }
     } catch (error) {
       setTestResult({
         success: false,
-        message: error instanceof Error ? error.message : '测试工具时发生错误'
+        message: error instanceof Error ? error.message : t('toolConfig.testError')
       });
     } finally {
       setIsTesting(false);
@@ -82,10 +81,11 @@ const ToolConfigForm: React.FC<ToolConfigFormProps> = ({
       const result = await window.electronAPI.openFileDialog();
       
       if (!result.canceled && result.filePaths.length > 0) {
+        const typeConfig = config[activeType];
         setConfig({
           ...config,
-          customTool: {
-            ...config.customTool,
+          [activeType]: {
+            ...typeConfig,
             path: result.filePaths[0]
           }
         });
@@ -95,180 +95,205 @@ const ToolConfigForm: React.FC<ToolConfigFormProps> = ({
     }
   };
 
+  const currentTypeConfig = config[activeType];
+
   return (
     <form onSubmit={handleSubmit} className={`space-y-6 ${className}`}>
       <div className="space-y-6">
-        {/* 工具类型选择 */}
+        {/* 链接类型切换 */}
         <div>
-          <h4 className="text-lg font-medium text-gray-900 mb-4">默认打开方式</h4>
-          <div className="space-y-3">
-            <div className="flex items-center">
+          <h4 className={`text-lg font-medium mb-4 ${text.primary}`}>{t('toolConfig.linkType')}</h4>
+          <div className={`inline-flex rounded-md shadow-sm border overflow-hidden ${border.secondary}`}>
+            {(['url', 'magnet', 'localFile'] as LinkType[]).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setActiveType(type)}
+                className={`px-4 py-2 text-sm font-medium focus:outline-none ${
+                  activeType === type
+                    ? 'bg-blue-600 text-white'
+                    : isDark ? 'bg-neutral-800 text-gray-200 hover:bg-neutral-700' : 'bg-white text-gray-700 hover:bg-gray-50'
+                } ${type !== 'localFile' ? `border-r ${border.secondary}` : ''}`}
+              >
+                {typeLabels[type]}
+              </button>
+            ))}
+          </div>
+          <p className={`mt-1 text-sm ${text.muted}`}>
+            {t('toolConfig.linkTypeHint')}
+          </p>
+        </div>
+
+        <div className={`space-y-4 border rounded-lg p-4 ${border.secondary} ${bg.secondary}`}>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className={`text-lg font-medium ${text.primary}`}>
+              {typeLabels[activeType]} {t('toolConfig.customToolSuffix')}
+            </h4>
+            <label className="inline-flex items-center">
               <input
-                type="radio"
-                id="defaultBrowser"
-                name="toolType"
-                checked={!config.useCustomTool}
-                onChange={() => setConfig({ ...config, useCustomTool: false })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                type="checkbox"
+                checked={currentTypeConfig.enabled}
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    [activeType]: {
+                      ...currentTypeConfig,
+                      enabled: e.target.checked,
+                    },
+                  })
+                }
+                className={`h-4 w-4 text-blue-600 focus:ring-blue-500 rounded ${isDark ? 'border-gray-600 bg-neutral-800' : 'border-gray-300'}`}
               />
-              <label htmlFor="defaultBrowser" className="ml-3 block text-sm font-medium text-gray-700">
-                系统默认
-              </label>
-            </div>
+              <span className={`ml-2 text-sm ${text.secondary}`}>{t('toolConfig.enableCustomTool')}</span>
+            </label>
+          </div>
             
-            <div className="flex items-center">
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+              {t('toolConfig.toolName')}
+            </label>
+            <input
+              type="text"
+              value={currentTypeConfig.name}
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  [activeType]: {
+                    ...currentTypeConfig,
+                    name: e.target.value,
+                  },
+                })
+              }
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+              placeholder={t('toolConfig.toolNamePlaceholder')}
+            />
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+              {t('toolConfig.toolPath')}
+            </label>
+            <div className="flex space-x-2">
               <input
-                type="radio"
-                id="customTool"
-                name="toolType"
-                checked={config.useCustomTool}
-                onChange={() => setConfig({ ...config, useCustomTool: true })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                type="text"
+                value={currentTypeConfig.path}
+                onChange={(e) =>
+                  setConfig({
+                    ...config,
+                    [activeType]: {
+                      ...currentTypeConfig,
+                      path: e.target.value,
+                    },
+                  })
+                }
+                className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+                placeholder={t('toolConfig.toolPathPlaceholder')}
               />
-              <label htmlFor="customTool" className="ml-3 block text-sm font-medium text-gray-700">
-                自定义工具
-              </label>
+              <button
+                type="button"
+                onClick={handleBrowsePath}
+                className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 ${isDark ? 'bg-neutral-700 text-gray-200 hover:bg-neutral-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                {t('toolConfig.browse')}
+              </button>
             </div>
+            <p className={`mt-1 text-sm ${text.muted}`}>{t('toolConfig.selectExeHint')}</p>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+              {t('toolConfig.argsLabel')}
+            </label>
+            <input
+              type="text"
+              value={currentTypeConfig.arguments}
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  [activeType]: {
+                    ...currentTypeConfig,
+                    arguments: e.target.value,
+                  },
+                })
+              }
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+              placeholder={t('toolConfig.argsPlaceholder')}
+            />
+            <p className={`mt-1 text-sm ${text.muted}`}>
+              {t('toolConfig.argsHint')}
+            </p>
           </div>
         </div>
 
-        {/* 自定义工具设置 */}
-        {config.useCustomTool && (
-          <div className="space-y-4 border border-gray-200 rounded-lg p-4 bg-gray-50">
-            <h4 className="text-lg font-medium text-gray-900 mb-2">自定义工具设置</h4>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                工具名称
-              </label>
-              <input
-                type="text"
-                value={config.customTool.name}
-                onChange={(e) => setConfig({
-                  ...config,
-                  customTool: { ...config.customTool, name: e.target.value }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="例如：PotPlayer"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                工具路径
-              </label>
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={config.customTool.path}
-                  onChange={(e) => setConfig({
-                    ...config,
-                    customTool: { ...config.customTool, path: e.target.value }
-                  })}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="例如：C:\Program Files\PotPlayer\PotPlayer.exe"
-                />
-                <button
-                  type="button"
-                  onClick={handleBrowsePath}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  浏览...
-                </button>
-              </div>
-              <p className="mt-1 text-sm text-gray-500">选择可执行文件（.exe）</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                命令行参数
-              </label>
-              <input
-                type="text"
-                value={config.customTool.arguments}
-                onChange={(e) => setConfig({
-                  ...config,
-                  customTool: { ...config.customTool, arguments: e.target.value }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="例如：{url} 或 /play {url}"
-              />
-              <p className="mt-1 text-sm text-gray-500">使用 {`{url}`} 作为URL占位符</p>
-            </div>
-          </div>
-        )}
-
-        {/* 状态显示 */}
         <div className="space-y-4">
-          <h4 className="text-lg font-medium text-gray-900">当前状态</h4>
+          <h4 className={`text-lg font-medium ${text.primary}`}>{t('toolConfig.currentStatus')}</h4>
           
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <div className={`border rounded-lg p-4 ${bg.secondary} ${border.secondary}`}>
             <div className="space-y-2">
-              <div className="flex items-center">
-                <span className="text-sm font-medium text-gray-700 mr-2">当前工具:</span>
-                <span className="text-sm text-gray-900">
-                  {config.useCustomTool ? config.customTool.name || '未设置' : '系统默认'}
-                </span>
-              </div>
-              
-              {config.useCustomTool && config.customTool.path && (
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-gray-700 mr-2">工具路径:</span>
-                  <span className="text-sm text-gray-900 truncate">{config.customTool.path}</span>
-                </div>
-              )}
-              
-              {config.lastTestResult && (
-                <div className="flex items-center">
-                  <span className="text-sm font-medium text-gray-700 mr-2">上次测试:</span>
-                  <span className={`text-sm ${config.lastTestResult.success ? 'text-green-600' : 'text-red-600'}`}>
-                    {config.lastTestResult.success ? '✓ 成功' : '✗ 失败'} - {new Date(config.lastTestResult.timestamp).toLocaleString()}
-                  </span>
-                </div>
-              )}
+              {(['url', 'magnet', 'localFile'] as LinkType[]).map((type) => {
+                const cfg = config[type];
+                return (
+                  <div key={type} className="mt-2">
+                    <div className="flex items-center">
+                      <span className={`text-sm font-medium mr-2 ${text.secondary}`}>
+                        {typeLabels[type]}:
+                      </span>
+                      <span className={`text-sm ${text.primary}`}>
+                        {cfg.enabled ? cfg.name || t('toolConfig.notSet') : t('toolConfig.systemDefault')}
+                      </span>
+                    </div>
+                    {cfg.enabled && cfg.path && (
+                      <div className="flex items-center">
+                        <span className={`text-sm font-medium mr-2 ${text.secondary}`}>{t('toolConfig.pathLabel')}</span>
+                        <span className={`text-sm truncate ${text.primary}`}>{cfg.path}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* 操作结果提示 */}
         {saveResult && (
-          <div className={`p-3 rounded-md ${saveResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <p className={`text-sm ${saveResult.success ? 'text-green-800' : 'text-red-800'}`}>
+          <div className={`p-3 rounded-md border ${saveResult.success ? (isDark ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200') : (isDark ? 'bg-red-900/30 border-red-700' : 'bg-red-50 border-red-200')}`}>
+            <p className={`text-sm ${saveResult.success ? (isDark ? 'text-green-200' : 'text-green-800') : (isDark ? 'text-red-200' : 'text-red-800')}`}>
               {saveResult.message}
             </p>
           </div>
         )}
 
         {testResult && (
-          <div className={`p-3 rounded-md ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <p className={`text-sm ${testResult.success ? 'text-green-800' : 'text-red-800'}`}>
+          <div className={`p-3 rounded-md border ${testResult.success ? (isDark ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200') : (isDark ? 'bg-red-900/30 border-red-700' : 'bg-red-50 border-red-200')}`}>
+            <p className={`text-sm ${testResult.success ? (isDark ? 'text-green-200' : 'text-green-800') : (isDark ? 'text-red-200' : 'text-red-800')}`}>
               {testResult.message}
             </p>
           </div>
         )}
 
         {/* 操作按钮 */}
-        <div className="flex justify-between pt-4 border-t border-gray-200">
+        <div className={`flex justify-between pt-4 border-t ${border.primary}`}>
           <button
             type="button"
             onClick={handleTestTool}
-            disabled={isTesting || (config.useCustomTool && !config.customTool.path)}
+            disabled={isTesting || (currentTypeConfig.enabled && !currentTypeConfig.path)}
             className={`px-6 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-              isTesting || (config.useCustomTool && !config.customTool.path)
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              isTesting || (currentTypeConfig.enabled && !currentTypeConfig.path)
+                ? isDark ? 'bg-neutral-700 text-gray-400 cursor-not-allowed' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-green-600 text-white hover:bg-green-700'
             }`}
           >
-            {isTesting ? '测试中...' : '测试工具'}
+            {isTesting ? t('toolConfig.testing') : t('toolConfig.testCurrentType')}
           </button>
           
           <div className="flex space-x-4">
             <button
               type="button"
               onClick={() => setConfig(initialConfig)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className={`px-6 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 ${border.primary} ${text.secondary} ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-gray-50'}`}
             >
-              重置
+              {t('toolConfig.reset')}
             </button>
             <button
               type="submit"
@@ -279,7 +304,7 @@ const ToolConfigForm: React.FC<ToolConfigFormProps> = ({
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
-              {isSaving ? '保存中...' : '保存配置'}
+              {isSaving ? t('toolConfig.saving') : t('toolConfig.saveConfig')}
             </button>
           </div>
         </div>

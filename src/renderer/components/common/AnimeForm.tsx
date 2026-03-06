@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { WATCH_METHODS } from '../../../shared/constants';
 import FormValidation from './FormValidation';
 import useFormValidation from '../../hooks/useFormValidation';
+import { useTheme, useTranslation } from '../../hooks';
+import type { TranslationKey } from '../../i18n/translations';
 
 interface AnimeFormData {
   title: string;
@@ -36,6 +38,8 @@ const AnimeForm: React.FC<AnimeFormProps> = ({
 
   const [tagInput, setTagInput] = useState('');
   const [prevInitialData, setPrevInitialData] = useState<typeof initialData>();
+  const { isDark, text, border, input } = useTheme();
+  const { t } = useTranslation();
 
   // 监听initialData变化，正确重置表单
   useEffect(() => {
@@ -75,22 +79,21 @@ const AnimeForm: React.FC<AnimeFormProps> = ({
     setTagInput('');
   }, [initialData]);
 
-  // 表单验证
   const { errors, validate } = useFormValidation(
     enableValidation ? {
       title: {
         required: true,
         validate: (value: string) => value.trim().length > 0,
-        message: '番剧名称不能为空'
+        message: t('anime.validation.titleRequired')
       },
       watchMethod: {
         required: true,
         validate: (value: string) => WATCH_METHODS.includes(value),
-        message: '请选择有效的观看方式'
+        message: t('anime.validation.watchMethodRequired')
       },
       tags: {
         validate: (value: string[]) => value.length <= 10,
-        message: '标签数量不能超过10个'
+        message: t('anime.validation.tagsLimit')
       }
     } : undefined
   );
@@ -137,52 +140,52 @@ const AnimeForm: React.FC<AnimeFormProps> = ({
       {enableValidation && <FormValidation errors={errors} />}
       <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            番剧名称 *
+          <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+            {t('anime.titleLabel')}
           </label>
           <input
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="请输入番剧名称"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+            placeholder={t('anime.titlePlaceholder')}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            观看方式 *
+          <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+            {t('anime.watchMethodLabel')}
           </label>
           <select
             value={formData.watchMethod}
             onChange={(e) => setFormData({ ...formData, watchMethod: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
           >
             {WATCH_METHODS.map((method) => (
               <option key={method} value={method}>
-                {method}
+                {t(('watchMethod.' + method) as TranslationKey)}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            描述
+          <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+            {t('anime.descriptionLabel')}
           </label>
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="请输入番剧描述（可选）"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+            placeholder={t('anime.descriptionPlaceholder')}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            标签
+          <label className={`block text-sm font-medium mb-1 ${text.secondary}`}>
+            {t('anime.tagsLabel')}
           </label>
           <div className="flex gap-2 mb-2">
             <input
@@ -190,48 +193,48 @@ const AnimeForm: React.FC<AnimeFormProps> = ({
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="输入标签后按Enter添加"
+              className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${input.base} ${input.focus}`}
+              placeholder={t('anime.tagsPlaceholder')}
             />
             <button
               type="button"
               onClick={handleAddTag}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              添加
+              {t('anime.addTag')}
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
             {formData.tags.map((tag, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${isDark ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-100 text-blue-800'}`}
               >
                 {tag}
                 <button
                   type="button"
                   onClick={() => handleRemoveTag(tag)}
-                  className="ml-2 text-blue-600 hover:text-blue-800"
+                  className={isDark ? 'ml-2 text-blue-300 hover:text-blue-100' : 'ml-2 text-blue-600 hover:text-blue-800'}
                 >
                   ×
                 </button>
               </span>
             ))}
             {formData.tags.length === 0 && (
-              <span className="text-gray-500 text-sm">暂无标签</span>
+              <span className={`text-sm ${text.muted}`}>{t('anime.noTags')}</span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
+      <div className={`flex justify-end space-x-4 pt-4 border-t ${border.primary}`}>
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className={`px-6 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 ${border.primary} ${text.secondary} ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-gray-50'}`}
           >
-            取消
+            {t('anime.cancel')}
           </button>
         )}
         {onDelete && (
@@ -240,14 +243,14 @@ const AnimeForm: React.FC<AnimeFormProps> = ({
             onClick={onDelete}
             className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
           >
-            删除番剧
+            {t('anime.deleteAnime')}
           </button>
         )}
         <button
           type="submit"
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          保存番剧
+          {t('anime.saveAnime')}
         </button>
       </div>
     </form>

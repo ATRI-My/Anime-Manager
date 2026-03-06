@@ -11,6 +11,7 @@
   height: 8px;
 }
 
+/* 浅色主题滚动条 */
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 4px;
@@ -23,6 +24,24 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* 深色主题滚动条 */
+.dark ::-webkit-scrollbar-track,
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #262626;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb,
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #525252;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #737373;
 }
 
 /* 基础字体设置 */

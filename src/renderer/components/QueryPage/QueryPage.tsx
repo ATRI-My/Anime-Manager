@@ -6,7 +6,7 @@ import VirtualAnimeGrid from '../common/VirtualAnimeGrid';
 import VirtualEpisodeList from '../common/VirtualEpisodeList';
 import { useAppDataContext } from '../../contexts/AppDataContext';
 import { useToast } from '../../contexts/ToastContext';
-import { useVirtualScrollConfig } from '../../hooks/useVirtualScrollConfig';
+import { useVirtualScrollConfig, useTranslation } from '../../hooks';
 import { fuzzySearch } from '../../../shared/utils';
 import { Anime, Episode } from '../../../shared/types';
 
@@ -21,6 +21,9 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
   const virtualScroll = useVirtualScrollConfig();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
+  const theme = state.settings?.theme || 'light';
+  const isDark = theme === 'dark';
+  const { t } = useTranslation();
 
   // 模糊搜索过滤
   const filteredAnimeList = useMemo(() => {
@@ -66,25 +69,24 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
       if (state.settings?.toolConfig) {
         const result = await (window as any).electronAPI.openWithTool(url, state.settings.toolConfig);
         if (result.success) {
-          addToast('success', '打开链接', '链接已成功打开');
+          addToast('success', t('episode.open'), t('query.toast.openSuccess'));
         } else {
-          addToast('error', '打开链接失败', result.error || '未知错误');
+          addToast('error', t('query.toast.openFailed'), result.error || '');
         }
       } else {
-        // 如果没有工具配置，使用默认浏览器
         const result = await (window as any).electronAPI.openWithTool(url, {
           useCustomTool: false,
           customTool: { name: '', path: '', arguments: '' }
         });
         if (result.success) {
-          addToast('success', '打开链接', '链接已使用默认浏览器打开');
+          addToast('success', t('episode.open'), t('query.toast.openWithBrowser'));
         } else {
-          addToast('error', '打开链接失败', result.error || '未知错误');
+          addToast('error', t('query.toast.openFailed'), result.error || '');
         }
       }
     } catch (err) {
       console.error('打开链接失败:', err);
-      addToast('error', '打开链接失败', err instanceof Error ? err.message : '未知错误');
+      addToast('error', t('query.toast.openFailed'), err instanceof Error ? err.message : '');
     }
   };
 
@@ -94,7 +96,7 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">加载中...</p>
+            <p className={`mt-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t('query.loading')}</p>
           </div>
         </div>
       </div>
@@ -104,16 +106,16 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
   if (error) {
     return (
       <div className={`p-6 ${className}`}>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className={`border rounded-lg p-4 ${isDark ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-200'}`}>
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`h-5 w-5 ${isDark ? 'text-red-400' : 'text-red-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">加载失败</h3>
-              <div className="mt-2 text-sm text-red-700">
+              <h3 className={`text-sm font-medium ${isDark ? 'text-red-300' : 'text-red-800'}`}>{t('query.loadFailed')}</h3>
+              <div className={`mt-2 text-sm ${isDark ? 'text-red-400' : 'text-red-700'}`}>
                 <p>{error}</p>
               </div>
             </div>
@@ -126,12 +128,12 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
   return (
     <div className={`p-6 ${className}`}>
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">动漫查询</h2>
-        <p className="text-gray-600 mb-6">搜索和浏览您的动漫资源</p>
+        <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t('query.title')}</h2>
+        <p className={`mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t('query.subtitle')}</p>
         
         <div className="mb-8">
           <SearchBar 
-            placeholder="搜索动漫名称、标签或描述..."
+            placeholder={t('query.searchPlaceholder')}
             onSearch={handleSearch}
             suggestions={suggestions}
             onSuggestionSelect={handleSuggestionSelect}
@@ -141,20 +143,20 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
 
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">动漫列表</h3>
-          <div className="text-sm text-gray-500">
-            共 {filteredAnimeList.length} 部动漫
+          <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t('query.animeList')}</h3>
+          <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            {t('query.animeCount', { count: String(filteredAnimeList.length) })}
           </div>
         </div>
         
         {filteredAnimeList.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className={`text-center py-12 rounded-lg shadow ${isDark ? 'bg-neutral-800' : 'bg-white'}`}>
+            <svg className={`mx-auto h-12 w-12 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">暂无动漫</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {searchQuery ? '没有找到匹配的动漫' : '还没有添加任何动漫'}
+            <h3 className={`mt-2 text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>{t('query.noAnime')}</h3>
+            <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              {searchQuery ? t('query.noAnimeFilter') : t('query.noAnimeEmpty')}
             </p>
           </div>
         ) : virtualScroll.shouldVirtualizeAnimeGrid(filteredAnimeList.length) ? (
@@ -162,7 +164,7 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
             <VirtualAnimeGrid
               animeList={filteredAnimeList}
               onSelect={handleSelectAnime}
-              className="rounded-lg border border-gray-200"
+              className={`rounded-lg border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}
               {...virtualScroll.getAnimeGridProps()}
             />
           </div>
@@ -180,14 +182,14 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
       </div>
 
       {selectedAnime && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-neutral-800' : 'bg-white'}`}>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold text-gray-800">
-              {selectedAnime.title} - 剧集列表
+            <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>
+              {selectedAnime.title} - {t('query.episodeList')}
             </h3>
             <button
               onClick={() => setSelectedAnime(null)}
-              className="text-gray-400 hover:text-gray-600"
+              className={`${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

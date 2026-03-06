@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { List } from 'react-window';
 import { Episode } from '../../../shared/types';
+import { useTheme, useTranslation } from '../../hooks';
 
 interface VirtualEpisodeListProps {
   episodes: Episode[];
@@ -22,6 +23,8 @@ const VirtualEpisodeList: React.FC<VirtualEpisodeListProps> = ({
   itemHeight = 80
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { isDark, bg, text, border } = useTheme();
+  const { t } = useTranslation();
 
   const handleCopyUrl = async (e: React.MouseEvent, url: string, episodeId: string) => {
     e.stopPropagation();
@@ -72,18 +75,18 @@ const VirtualEpisodeList: React.FC<VirtualEpisodeListProps> = ({
   };
 
   const TableHeader = () => (
-    <div className="grid grid-cols-12 gap-4 bg-gray-50 px-6 py-3 border-b border-gray-200">
-      <div className="col-span-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        集数
+    <div className={`grid grid-cols-12 gap-4 px-6 py-3 border-b ${bg.secondary} ${border.primary}`}>
+      <div className={`col-span-2 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+        {t('episode.columnNumber')}
       </div>
-      <div className="col-span-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        标题
+      <div className={`col-span-5 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+        {t('episode.columnTitle')}
       </div>
-      <div className="col-span-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        状态
+      <div className={`col-span-2 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+        {t('episode.columnStatus')}
       </div>
-      <div className="col-span-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        操作
+      <div className={`col-span-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+        {t('episode.columnAction')}
       </div>
     </div>
   );
@@ -100,17 +103,17 @@ const VirtualEpisodeList: React.FC<VirtualEpisodeListProps> = ({
       <div 
         style={style}
         key={episode.id} 
-        className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50 cursor-pointer border-b border-gray-200"
+        className={`grid grid-cols-12 gap-4 px-6 py-4 cursor-pointer border-b ${bg.hover} ${border.primary}`}
         onClick={() => handleRowClick(episode)}
       >
         <div className="col-span-2 flex items-center">
-          <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-            <span className="text-blue-800 font-bold">{episode.number}</span>
+          <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${isDark ? 'bg-blue-900/50' : 'bg-blue-100'}`}>
+            <span className={isDark ? 'text-blue-200 font-bold' : 'text-blue-800 font-bold'}>{episode.number}</span>
           </div>
         </div>
         <div className="col-span-5">
-          <div className="text-sm font-medium text-gray-900">{episode.title}</div>
-          <div className="text-xs text-gray-500 truncate" title={episode.url}>
+          <div className={`text-sm font-medium ${text.primary}`}>{episode.title}</div>
+          <div className={`text-xs truncate ${text.muted}`} title={episode.url}>
             {episode.url}
           </div>
         </div>
@@ -128,7 +131,7 @@ const VirtualEpisodeList: React.FC<VirtualEpisodeListProps> = ({
             )}
           </svg>
           <span className={`text-sm ${getWatchedStatus(episode.watched)}`}>
-            {episode.watched ? '已观看' : '未观看'}
+            {episode.watched ? t('episode.watched') : t('episode.unwatched')}
           </span>
         </div>
         <div className="col-span-3 flex space-x-2">
@@ -136,19 +139,19 @@ const VirtualEpisodeList: React.FC<VirtualEpisodeListProps> = ({
             onClick={(e) => handleCopyUrl(e, episode.url, episode.id)}
             className={`px-3 py-1 rounded text-xs font-medium ${
               copiedId === episode.id 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                ? isDark ? 'bg-green-800/50 text-green-200' : 'bg-green-100 text-green-800' 
+                : isDark ? 'bg-blue-800/50 text-blue-200 hover:bg-blue-700/50' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
             }`}
-            title="复制链接"
+            title={t('episode.copyLinkTitle')}
           >
-            {copiedId === episode.id ? '已复制' : '复制'}
+            {copiedId === episode.id ? t('episode.copied') : t('episode.copy')}
           </button>
           <button
             onClick={(e) => handleOpenUrl(e, episode.url)}
-            className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs font-medium hover:bg-green-200"
-            title="打开链接"
+            className={isDark ? 'px-3 py-1 bg-green-800/50 text-green-200 rounded text-xs font-medium hover:bg-green-700/50' : 'px-3 py-1 bg-green-100 text-green-800 rounded text-xs font-medium hover:bg-green-200'}
+            title={t('episode.openLinkTitle')}
           >
-            打开
+            {t('episode.open')}
           </button>
         </div>
       </div>
@@ -159,11 +162,11 @@ const VirtualEpisodeList: React.FC<VirtualEpisodeListProps> = ({
     return (
       <div className={`${className}`}>
         <div className="text-center py-12">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`mx-auto h-12 w-12 ${text.muted}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">暂无剧集</h3>
-          <p className="mt-1 text-sm text-gray-500">还没有添加任何剧集。</p>
+          <h3 className={`mt-2 text-sm font-medium ${text.primary}`}>{t('episode.noEpisodes')}</h3>
+          <p className={`mt-1 text-sm ${text.muted}`}>{t('episode.noEpisodesHint')}</p>
         </div>
       </div>
     );
@@ -171,7 +174,7 @@ const VirtualEpisodeList: React.FC<VirtualEpisodeListProps> = ({
 
   return (
     <div className={`${className}`}>
-       <div className="overflow-x-auto rounded-lg border border-gray-200">
+       <div className={`overflow-x-auto rounded-lg border ${border.primary}`}>
         <TableHeader />
         <List
           rowCount={episodes.length}

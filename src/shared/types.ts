@@ -23,17 +23,33 @@ export interface AppData {
   animeList: Anime[]
 }
 
+export type LinkType = 'url' | 'magnet' | 'localFile'
+
+export type Theme = 'light' | 'dark'
+
+export type Locale = 'zh-CN' | 'en-US'
+
+export interface SingleToolConfig {
+  enabled: boolean
+  name: string
+  path: string
+  arguments: string
+}
+
+export interface ToolTestResult {
+  success: boolean
+  message: string
+  timestamp: string
+}
+
 export interface ToolConfig {
-  useCustomTool: boolean
-  customTool: {
-    name: string
-    path: string
-    arguments: string
-  }
-  lastTestResult?: {
-    success: boolean
-    message: string
-    timestamp: string
+  url: SingleToolConfig      // 网址 (https://...)
+  magnet: SingleToolConfig   // 磁力链接 (magnet:...)
+  localFile: SingleToolConfig // 本地文件
+  lastTestResults?: {
+    url?: ToolTestResult
+    magnet?: ToolTestResult
+    localFile?: ToolTestResult
   }
 }
 
@@ -61,4 +77,6 @@ export interface VirtualScrollConfig {
 export interface Settings {
   toolConfig: ToolConfig
   virtualScrollConfig?: VirtualScrollConfig
+  theme?: Theme
+  language?: Locale
 }

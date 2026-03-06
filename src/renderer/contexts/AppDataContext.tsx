@@ -577,10 +577,11 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
             const data = await window.electronAPI?.readFile?.(lastFilePath);
             if (data && data.animeList) {
               console.log('从上次文件加载数据成功，动漫数量:', data.animeList.length);
+              const savedSettings = await window.electronAPI?.getSettings?.().catch(() => null);
               setState(prev => ({
                 ...prev,
                 animeList: data.animeList,
-                settings: DEFAULT_SETTINGS,
+                settings: savedSettings ?? DEFAULT_SETTINGS,
                 currentFilePath: lastFilePath,
                 loading: false,
               }));
@@ -596,11 +597,12 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
         const data = await window.electronAPI?.readAnimeData?.();
         console.log('加载到的数据:', data);
         
+        const savedSettings = await window.electronAPI?.getSettings?.().catch(() => null);
         if (data && data.animeList) {
           setState(prev => ({
             ...prev,
             animeList: data.animeList,
-            settings: DEFAULT_SETTINGS,
+            settings: savedSettings ?? DEFAULT_SETTINGS,
             loading: false,
           }));
           console.log('数据加载成功，动漫数量:', data.animeList.length);
@@ -609,7 +611,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
           setState(prev => ({
             ...prev,
             animeList: DEFAULT_APP_DATA.animeList,
-            settings: DEFAULT_SETTINGS,
+            settings: savedSettings ?? DEFAULT_SETTINGS,
             loading: false,
           }));
         }

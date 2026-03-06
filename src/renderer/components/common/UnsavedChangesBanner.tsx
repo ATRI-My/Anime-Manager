@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../hooks';
 
 interface UnsavedChangesBannerProps {
   isModified: boolean;
@@ -11,6 +12,7 @@ const UnsavedChangesBanner: React.FC<UnsavedChangesBannerProps> = ({
   onSave,
   onDiscard
 }) => {
+  const { t } = useTranslation();
   if (!isModified) {
     return null;
   }
@@ -36,7 +38,7 @@ const UnsavedChangesBanner: React.FC<UnsavedChangesBannerProps> = ({
         </div>
         <div className="ml-3">
           <p className="text-sm text-yellow-700">
-            有未保存的修改。请保存以防止数据丢失。
+            {t('unsaved.message')}
           </p>
           <div className="mt-2">
             <button
@@ -44,7 +46,7 @@ const UnsavedChangesBanner: React.FC<UnsavedChangesBannerProps> = ({
               onClick={onSave}
               className="bg-yellow-500 text-white px-3 py-1.5 text-sm font-medium rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
             >
-              立即保存
+              {t('unsaved.saveNow')}
             </button>
             {onDiscard && (
               <button
@@ -52,7 +54,7 @@ const UnsavedChangesBanner: React.FC<UnsavedChangesBannerProps> = ({
                 onClick={onDiscard}
                 className="ml-3 text-yellow-700 bg-transparent px-3 py-1.5 text-sm font-medium rounded-md hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
               >
-                放弃修改
+                {t('unsaved.discard')}
               </button>
             )}
           </div>

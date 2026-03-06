@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SUPPORTED_FILE_TYPES = exports.APP_VERSION = exports.DEFAULT_APP_DATA = exports.DEFAULT_SETTINGS = exports.DEFAULT_VIRTUAL_SCROLL_CONFIG = exports.VIRTUALIZATION_THRESHOLDS = exports.WATCH_METHODS = void 0;
+exports.SUPPORTED_FILE_TYPES = exports.APP_VERSION = exports.DEFAULT_APP_DATA = exports.DEFAULT_SETTINGS = exports.DEFAULT_VIRTUAL_SCROLL_CONFIG = exports.VIRTUALIZATION_THRESHOLDS = exports.WATCH_METHODS = exports.SUPPORTED_LOCALES = void 0;
+exports.SUPPORTED_LOCALES = ['zh-CN', 'en-US'];
 exports.WATCH_METHODS = ['本地播放器', '在线观看', '下载观看'];
 // 虚拟化组件阈值配置
 exports.VIRTUALIZATION_THRESHOLDS = {
@@ -25,16 +26,21 @@ exports.DEFAULT_VIRTUAL_SCROLL_CONFIG = {
         height: 600
     }
 };
+const createDefaultSingleToolConfig = () => ({
+    enabled: false,
+    name: '',
+    path: '',
+    arguments: ''
+});
 exports.DEFAULT_SETTINGS = {
     toolConfig: {
-        useCustomTool: false,
-        customTool: {
-            name: '',
-            path: '',
-            arguments: ''
-        }
+        url: createDefaultSingleToolConfig(),
+        magnet: createDefaultSingleToolConfig(),
+        localFile: createDefaultSingleToolConfig()
     },
-    virtualScrollConfig: exports.DEFAULT_VIRTUAL_SCROLL_CONFIG
+    virtualScrollConfig: exports.DEFAULT_VIRTUAL_SCROLL_CONFIG,
+    theme: 'light',
+    language: 'zh-CN'
 };
 exports.DEFAULT_APP_DATA = {
     version: '1.0.0',

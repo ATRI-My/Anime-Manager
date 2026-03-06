@@ -1,6 +1,6 @@
 {
   "name": "anime-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "动漫资源管理器桌面应用",
   "main": "dist/main/index.js",
   "scripts": {
@@ -10,7 +10,9 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "verify-build": "npm run build && echo 'Build verification passed'",
-    "dist:win": "npm run verify-build && electron-builder --win"
+    "dist:win": "npm run verify-build && electron-builder --win",
+    "dist:win:portable": "npm run verify-build && electron-builder --win portable",
+    "dist:dir": "npm run verify-build && electron-builder --dir"
   },
   "build": {
     "appId": "com.anime.manager",

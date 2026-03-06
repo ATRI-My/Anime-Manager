@@ -4,7 +4,8 @@ import AnimeForm from '../common/AnimeForm';
 import EpisodeTable from '../common/EpisodeTable';
 import FormValidation from '../common/FormValidation';
 import { UnsavedChangesBanner } from '../common';
-import { useAppDataContext, useToast, useUnsavedChangesGuard } from '../../hooks';
+import { useAppDataContext, useToast, useUnsavedChangesGuard, useTranslation } from '../../hooks';
+import type { TranslationKey } from '../../i18n/translations';
 import { Anime } from '../../../shared/types';
 import { validateAnime } from '../../../shared/validation';
 import type { EpisodeFormData } from '../common/InlineEpisodeForm';
@@ -27,6 +28,9 @@ const WritePage: React.FC = () => {
   }, [state.animeList, selectedAnimeId]);
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const theme = state.settings?.theme || 'light';
+  const isDark = theme === 'dark';
+  const { t } = useTranslation();
 
   // 处理文件操作 - 通过 FileOperations 组件处理
 
@@ -61,8 +65,20 @@ const WritePage: React.FC = () => {
     const validationResult = validateAnime(animeData);
     
     if (!validationResult.isValid) {
-      // 验证失败，显示错误
-      setValidationErrors(validationResult.errors);
+      const errorKeyMap: Record<string, TranslationKey> = {
+        'id不能为空': 'anime.validation.idRequired',
+        '标题不能为空': 'anime.validation.titleRequired',
+        'watchMethod是必填字段': 'anime.validation.watchMethodRequiredField',
+        'tags必须是数组': 'anime.validation.tagsMustBeArray',
+        'episodes必须是数组': 'anime.validation.episodesMustBeArray',
+        'createdAt是必填字段': 'anime.validation.dateRequired',
+        'updatedAt是必填字段': 'anime.validation.dateRequired',
+      };
+      const translated = validationResult.errors.map((err) => {
+        if (err.startsWith('episodes包含无效数据')) return t('anime.validation.episodesInvalid');
+        return errorKeyMap[err] ? t(errorKeyMap[err]) : err;
+      });
+      setValidationErrors(translated);
       console.error('表单验证失败:', validationResult.errors);
       return; // 阻止保存
     }
@@ -72,27 +88,26 @@ const WritePage: React.FC = () => {
         // 更新现有番剧
         const result = await actions.updateAnime(selectedAnimeId, formData);
         if (result.success) {
-          addToast('success', '更新番剧', '番剧信息更新成功');
+          addToast('success', t('write.editAnime'), t('write.toast.updateAnime'));
         } else {
-          addToast('error', '更新番剧失败', result.error || '未知错误');
+          addToast('error', t('write.toast.updateAnimeFailed'), result.error || '');
         }
       } else {
-        // 添加新番剧 - 需要确保包含episodes字段
         const animeToAdd = {
           ...formData,
-          episodes: [] // 新番剧默认没有剧集
+          episodes: []
         };
         const result = await actions.addAnime(animeToAdd);
         if (result.success) {
-          addToast('success', '添加番剧', `"${formData.title}" 添加成功`);
+          addToast('success', t('write.addAnime'), `"${formData.title}" ${t('write.toast.addAnime')}`);
         } else {
-          addToast('error', '添加番剧失败', result.error || '未知错误');
+          addToast('error', t('write.toast.addAnimeFailed'), result.error || '');
         }
       }
       setIsEditing(false);
     } catch (error) {
       console.error('保存番剧失败:', error);
-      addToast('error', '保存番剧失败', error instanceof Error ? error.message : '未知错误');
+      addToast('error', t('write.toast.saveFileFailed'), error instanceof Error ? error.message : '');
     }
   };
 
@@ -100,16 +115,16 @@ const WritePage: React.FC = () => {
     try {
       const result = await actions.deleteAnime(animeId);
       if (result.success) {
-        addToast('success', '删除番剧', '番剧删除成功');
+        addToast('success', t('anime.deleteAnime'), t('write.toast.deleteAnime'));
         if (selectedAnimeId === animeId) {
           setSelectedAnimeId(null);
         }
       } else {
-        addToast('error', '删除番剧失败', result.error || '未知错误');
+        addToast('error', t('write.toast.deleteAnimeFailed'), result.error || '');
       }
     } catch (error) {
       console.error('删除番剧失败:', error);
-      addToast('error', '删除番剧失败', error instanceof Error ? error.message : '未知错误');
+      addToast('error', t('write.toast.deleteAnimeFailed'), error instanceof Error ? error.message : '');
     }
   };
 
@@ -123,13 +138,13 @@ const WritePage: React.FC = () => {
     try {
       const result = await actions.saveFile();
       if (result.success) {
-        addToast('success', '保存文件', '文件保存成功');
+        addToast('success', t('file.save'), t('write.toast.saveFile'));
       } else {
-        addToast('error', '保存文件失败', result.error || '未知错误');
+        addToast('error', t('write.toast.saveFileFailed'), result.error || '');
       }
     } catch (error) {
       console.error('保存文件失败:', error);
-      addToast('error', '保存文件失败', error instanceof Error ? error.message : '未知错误');
+      addToast('error', t('write.toast.saveFileFailed'), error instanceof Error ? error.message : '');
     }
   };
 
@@ -137,28 +152,24 @@ const WritePage: React.FC = () => {
   const handleAddEpisode = async (formData: EpisodeFormData) => {
     try {
       if (!selectedAnimeId) {
-        addToast('error', '无法添加剧集', '请先选择一个番剧');
+        addToast('error', t('episode.addNew'), t('write.toast.selectAnimeFirst'));
         return;
       }
-      
-      // 验证选中的动漫是否存在
       if (!selectedAnime) {
-        addToast('error', '无法添加剧集', '选中的番剧不存在或已被删除');
+        addToast('error', t('episode.addNew'), t('write.toast.animeNotFound'));
         setSelectedAnimeId(null);
         return;
       }
-      
-      // 直接添加剧集，不再打开模态框
       const result = await actions.addEpisode(selectedAnimeId, formData);
       if (result.success) {
-        addToast('success', '添加剧集', `剧集 "${formData.title}" 添加成功`);
-        toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
+        addToast('success', t('episode.addNew'), t('write.toast.addEpisode'));
+        toast.info(t('write.toast.savedToMemory'), t('write.toast.clickSaveToFile'), 5000);
       } else {
-        addToast('error', '添加剧集失败', result.error || '未知错误');
+        addToast('error', t('write.toast.addEpisodeFailed'), result.error || '');
       }
     } catch (error) {
       console.error('添加剧集失败:', error);
-      addToast('error', '添加剧集失败', error instanceof Error ? error.message : '未知错误');
+      addToast('error', t('write.toast.addEpisodeFailed'), error instanceof Error ? error.message : '');
     }
   };
 
@@ -169,14 +180,14 @@ const WritePage: React.FC = () => {
       // 直接更新剧集，不再打开模态框
       const result = await actions.updateEpisode(selectedAnimeId, episodeId, formData);
       if (result.success) {
-        addToast('success', '更新剧集', '剧集信息更新成功');
-        toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
+        addToast('success', t('episode.edit'), t('write.toast.updateEpisode'));
+        toast.info(t('write.toast.savedToMemory'), t('write.toast.clickSaveToFile'), 5000);
       } else {
-        addToast('error', '更新剧集失败', result.error || '未知错误');
+        addToast('error', t('write.toast.updateEpisodeFailed'), result.error || '');
       }
     } catch (error) {
       console.error('更新剧集失败:', error);
-      addToast('error', '更新剧集失败', error instanceof Error ? error.message : '未知错误');
+      addToast('error', t('write.toast.updateEpisodeFailed'), error instanceof Error ? error.message : '');
     }
   };
 
@@ -190,18 +201,16 @@ const WritePage: React.FC = () => {
       const result = await actions.deleteEpisode(selectedAnimeId, episodeId);
       
       if (result.success) {
-        addToast('success', '删除剧集', '剧集删除成功');
-        
-        // 直接更新selectedAnime状态，避免不必要的全局刷新
+        addToast('success', t('episode.delete'), t('write.toast.deleteEpisode'));
         if (result.updatedAnime) {
           setSelectedAnimeId(result.updatedAnime.id);
         }
       } else {
-        addToast('error', '删除剧集失败', result.error || '未知错误');
+        addToast('error', t('write.toast.deleteEpisodeFailed'), result.error || '');
       }
     } catch (error) {
       console.error('删除剧集失败:', error);
-      addToast('error', '删除剧集失败', error instanceof Error ? error.message : '未知错误');
+      addToast('error', t('write.toast.deleteEpisodeFailed'), error instanceof Error ? error.message : '');
     }
   };
 
@@ -226,16 +235,14 @@ const WritePage: React.FC = () => {
       }
       
       if (allSuccess) {
-        addToast('success', '批量删除剧集', `成功删除 ${episodeIds.length} 个剧集`);
-        
-        // 添加提示：修改已保存到内存，需要手动保存到文件
-        toast.info('修改已保存到内存', '请点击保存按钮保存到文件', 5000);
+        addToast('success', t('episode.bulkDelete'), t('write.toast.bulkDeleteEpisode'));
+        toast.info(t('write.toast.savedToMemory'), t('write.toast.clickSaveToFile'), 5000);
       } else {
-        addToast('error', '批量删除剧集失败', '部分剧集删除失败，请检查');
+        addToast('error', t('write.toast.bulkDeleteEpisodeFailed'), '');
       }
     } catch (error) {
       console.error('批量删除剧集失败:', error);
-      addToast('error', '批量删除剧集失败', error instanceof Error ? error.message : '未知错误');
+      addToast('error', t('write.toast.bulkDeleteEpisodeFailed'), error instanceof Error ? error.message : '');
     }
   };
 
@@ -256,7 +263,7 @@ const WritePage: React.FC = () => {
   useUnsavedChangesGuard({
     isModified: state.isModified,
     onConfirmNavigation: () => {
-      return window.confirm('有未保存的修改，确定要离开当前页面吗？');
+      return window.confirm(t('write.confirmLeave'));
     }
   });
 
@@ -270,7 +277,7 @@ const WritePage: React.FC = () => {
       
       {/* 顶部：文件操作工具栏 */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">数据写入</h2>
+        <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t('write.title')}</h2>
         <FileOperations />
       </div>
 
@@ -278,35 +285,41 @@ const WritePage: React.FC = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 左侧：番剧列表 */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-6 h-full">
+          <div className={`rounded-lg shadow p-6 h-full ${isDark ? 'bg-neutral-800' : 'bg-white'}`}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-gray-800">番剧列表</h3>
+              <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t('write.animeList')}</h3>
               <button
                 onClick={handleAddAnime}
                 className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
               >
-                添加新番剧
+                {t('write.addAnime')}
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg">
+            <div className={`flex-1 overflow-y-auto border rounded-lg ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
               {state.animeList.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
-                  暂无番剧数据
+                <div className={`p-4 text-center ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {t('write.noAnimeData')}
                 </div>
               ) : (
-                <ul className="divide-y divide-gray-200">
+                <ul className={`divide-y ${isDark ? 'divide-gray-600' : 'divide-gray-200'}`}>
                   {state.animeList.map((anime) => (
                      <li
                       key={anime.id}
-                      className={`p-3 cursor-pointer hover:bg-gray-50 ${
-                        selectedAnimeId === anime.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                      className={`p-3 cursor-pointer ${
+                        isDark ? 'hover:bg-neutral-700' : 'hover:bg-gray-50'
+                      } ${
+                        selectedAnimeId === anime.id 
+                          ? isDark 
+                            ? 'bg-blue-900/30 border-l-4 border-blue-400' 
+                            : 'bg-blue-50 border-l-4 border-blue-500' 
+                          : ''
                       }`}
                       onClick={() => handleSelectAnime(anime)}
                     >
-                      <div className="font-medium text-gray-900">{anime.title}</div>
-                      <div className="text-sm text-gray-500">
-                        {anime.episodes.length}集 • {anime.watchMethod}
+                      <div className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{anime.title}</div>
+                      <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {t('write.episodesCount', { n: String(anime.episodes.length) })} • {t(('watchMethod.' + anime.watchMethod) as any)}
                       </div>
                     </li>
                   ))}
@@ -319,9 +332,9 @@ const WritePage: React.FC = () => {
         {/* 右侧：编辑区 */}
         <div className="lg:col-span-2 space-y-6">
           {/* 番剧表单 */}
-          <div className="bg-white rounded-lg shadow p-6">
-             <h3 className="text-xl font-semibold text-gray-800 mb-4">
-               {isEditing ? '添加新番剧' : selectedAnimeId ? '编辑番剧' : '选择或添加番剧'}
+          <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-neutral-800' : 'bg-white'}`}>
+             <h3 className={`text-xl font-semibold mb-4 ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>
+               {isEditing ? t('write.addAnime') : selectedAnimeId ? t('write.editAnime') : t('write.selectOrAdd')}
              </h3>
             
             {/* 显示WritePage层面的验证错误 */}
@@ -339,16 +352,16 @@ const WritePage: React.FC = () => {
                  onDelete={selectedAnimeId ? () => handleDeleteAnime(selectedAnimeId) : undefined}
               />
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                请从左侧选择番剧或点击"添加新番剧"
+              <div className={`text-center py-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                {t('write.noAnimeHint')}
               </div>
             )}
           </div>
 
            {/* 剧集表格 */}
           {selectedAnimeId && selectedAnime && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">剧集管理</h3>
+            <div className={`rounded-lg shadow p-6 ${isDark ? 'bg-neutral-800' : 'bg-white'}`}>
+              <h3 className={`text-xl font-semibold mb-4 ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t('write.episodeManage')}</h3>
               <EpisodeTable
                 episodes={selectedAnime.episodes}
                 onAddEpisode={handleAddEpisode}

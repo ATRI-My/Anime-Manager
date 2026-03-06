@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Episode as SharedEpisode } from '../../../shared/types';
 import type { EpisodeFormData } from './InlineEpisodeForm';
 import InlineEpisodeForm from './InlineEpisodeForm';
+import { useTheme, useTranslation } from '../../hooks';
 
 interface EpisodeTableProps {
   episodes: SharedEpisode[];
@@ -25,6 +26,8 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
   const [showInlineForm, setShowInlineForm] = useState(false);
   const [editingEpisodeId, setEditingEpisodeId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const { isDark, bg, text, border } = useTheme();
+  const { t } = useTranslation();
 
   // 当剧集数据变化时，重置表单状态
   useEffect(() => {
@@ -128,9 +131,9 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
     <div className={`${className}`}>
       {/* 内联表单区域 */}
       {showInlineForm && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">
-            {isAddingNew ? '添加新剧集' : '编辑剧集'}
+        <div className={`mb-6 p-4 rounded-lg border ${bg.secondary} ${border.primary}`}>
+          <h3 className={`text-lg font-medium mb-4 ${text.primary}`}>
+            {isAddingNew ? t('episode.addNew') : t('episode.edit')}
           </h3>
           <InlineEpisodeForm
             onSubmit={handleFormSubmit}
@@ -160,10 +163,10 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
               type="checkbox"
               checked={selectAll}
               onChange={handleSelectAll}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className={`h-4 w-4 text-blue-600 focus:ring-blue-500 rounded ${isDark ? 'border-gray-600 bg-neutral-800' : 'border-gray-300'}`}
             />
-            <span className="ml-2 text-sm text-gray-700">
-              全选 ({selectedEpisodes.length}/{episodes.length})
+            <span className={`ml-2 text-sm ${text.secondary}`}>
+              {t('episode.selectAll')} ({selectedEpisodes.length}/{episodes.length})
             </span>
           </div>
           
@@ -173,83 +176,83 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
                 onClick={handleBulkDelete}
                 className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
               >
-                批量删除
+                {t('episode.bulkDelete')}
               </button>
             </div>
           )}
         </div>
 
-        <div className="text-sm text-gray-500">
-          共 {episodes.length} 个剧集
+        <div className={`text-sm ${text.muted}`}>
+          {t('episode.episodeCount', { n: String(episodes.length) })}
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className={`overflow-x-auto rounded-lg border ${border.primary}`}>
+        <table className={`min-w-full divide-y ${border.primary}`}>
+          <thead className={bg.secondary}>
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-12 ${text.muted}`}>
                 <input
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className={`h-4 w-4 text-blue-600 focus:ring-blue-500 rounded ${isDark ? 'border-gray-600 bg-neutral-800' : 'border-gray-300'}`}
                 />
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                集数
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnNumber')}
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                标题
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnTitle')}
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                链接
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnLink')}
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                观看状态
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnStatus')}
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                操作
+              <th scope="col" className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${text.muted}`}>
+                {t('episode.columnAction')}
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className={`${bg.card} divide-y ${border.primary}`}>
             {episodes.map((episode) => (
-              <tr key={episode.id} className="hover:bg-gray-50">
+              <tr key={episode.id} className={bg.hover}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
                     type="checkbox"
                     checked={selectedEpisodes.includes(episode.id)}
                     onChange={() => handleSelectEpisode(episode.id)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className={`h-4 w-4 text-blue-600 focus:ring-blue-500 rounded ${isDark ? 'border-gray-600 bg-neutral-800' : 'border-gray-300'}`}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">第{episode.number}话</div>
+                  <div className={`text-sm font-medium ${text.primary}`}>{t('episode.episodeNumber', { n: String(episode.number) })}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">{episode.title}</div>
+                  <div className={`text-sm ${text.primary}`}>{episode.title}</div>
                 </td>
                  <td className="px-6 py-4">
-                   <div className="text-sm text-gray-500 truncate max-w-2xl">{episode.url}</div>
+                   <div className={`text-sm truncate max-w-2xl ${text.muted}`}>{episode.url}</div>
                  </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${episode.watched ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {episode.watched ? '已观看' : '未观看'}
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${episode.watched ? (isDark ? 'bg-green-800/50 text-green-200' : 'bg-green-100 text-green-800') : (isDark ? 'bg-neutral-700 text-gray-200' : 'bg-gray-100 text-gray-800')}`}>
+                    {episode.watched ? t('episode.watched') : t('episode.unwatched')}
                   </span>
                 </td>
                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => handleEdit(episode.id)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      className={isDark ? 'text-blue-400 hover:text-blue-300 mr-4' : 'text-blue-600 hover:text-blue-900 mr-4'}
                     >
-                      编辑
+                      {t('episode.editBtn')}
                     </button>
                    <button
                      onClick={() => onDeleteEpisode(episode.id)}
-                     className="text-red-600 hover:text-red-900"
+                     className={isDark ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-900'}
                    >
-                     删除
+                     {t('episode.deleteBtn')}
                    </button>
                  </td>
               </tr>
@@ -259,25 +262,25 @@ const EpisodeTable: React.FC<EpisodeTableProps> = ({
       </div>
 
       {episodes.length === 0 && (
-        <div className="text-center py-12 border border-gray-200 rounded-lg">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className={`text-center py-12 border rounded-lg ${border.primary}`}>
+          <svg className={`mx-auto h-12 w-12 ${text.muted}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">暂无剧集数据</h3>
-          <p className="mt-1 text-sm text-gray-500">请先添加剧集数据。</p>
+          <h3 className={`mt-2 text-sm font-medium ${text.primary}`}>{t('episode.noEpisodesData')}</h3>
+          <p className={`mt-1 text-sm ${text.muted}`}>{t('episode.addEpisodeHint')}</p>
         </div>
       )}
 
       <div className="mt-6 flex justify-between items-center">
-        <div className="text-sm text-gray-500">
-          已选择 {selectedEpisodes.length} 个剧集
+        <div className={`text-sm ${text.muted}`}>
+          {t('episode.selectedCount', { n: String(selectedEpisodes.length) })}
         </div>
          <div className="flex space-x-3">
             <button
               onClick={handleAddNew}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              添加新行
+              {t('episode.addNewRow')}
             </button>
          </div>
       </div>
