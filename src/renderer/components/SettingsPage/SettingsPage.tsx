@@ -2,6 +2,7 @@ import React from 'react';
 import ToolConfigForm from '../common/ToolConfigForm';
 import { useAppDataContext, useToast, useTranslation } from '../../hooks';
 import { LinkType, Locale, Theme, ToolConfig } from '../../../shared/types';
+import { APP_VERSION } from '../../../shared/constants';
 
 interface SettingsPageProps {
   className?: string;
@@ -268,7 +269,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ className = '' }) => {
           <div className={isDark ? 'bg-neutral-900 rounded-lg shadow p-6' : 'bg-white rounded-lg shadow p-6'}>
             <h3 className={`text-xl font-semibold mb-4 ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t('settings.about')}</h3>
             <div className={`space-y-3 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
-               <p><strong>{t('settings.aboutVersion')}</strong> 1.0.0</p>
+               <p><strong>{t('settings.aboutVersion')}</strong> {APP_VERSION}</p>
                <p><strong>Electron:</strong> 25.9.8</p>
                <p><strong>React:</strong> 18.3.1</p>
                <p><strong>TypeScript:</strong> 5.9.3</p>

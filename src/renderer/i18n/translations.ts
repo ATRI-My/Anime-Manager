@@ -6,7 +6,7 @@ const zhCN = {
   // App
   'app.subtitle': '动漫资源管理器桌面应用',
   'app.footer.copyright': '© 2026 Anime Manager. 使用 Electron 构建的桌面应用。',
-  'app.footer.versionAndTab': '版本 1.1.0 | 当前标签: {tab}',
+  'app.footer.versionAndTab': '版本 {version} | 当前标签: {tab}',
   'app.tab.query': '查询',
   'app.tab.write': '写入',
   'app.tab.settings': '设置',
@@ -238,7 +238,7 @@ const zhCN = {
 const enUS: Record<TranslationKey, string> = {
   'app.subtitle': 'Anime Resource Manager Desktop App',
   'app.footer.copyright': '© 2026 Anime Manager. Desktop app built with Electron.',
-  'app.footer.versionAndTab': 'Version 1.1.0 | Current tab: {tab}',
+  'app.footer.versionAndTab': 'Version {version} | Current tab: {tab}',
   'app.tab.query': 'Query',
   'app.tab.write': 'Write',
   'app.tab.settings': 'Settings',

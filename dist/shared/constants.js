@@ -43,8 +43,8 @@ exports.DEFAULT_SETTINGS = {
     language: 'zh-CN'
 };
 exports.DEFAULT_APP_DATA = {
-    version: '1.0.0',
+    version: '1.2.0',
     animeList: []
 };
-exports.APP_VERSION = '1.0.0';
+exports.APP_VERSION = '1.2.0';
 exports.SUPPORTED_FILE_TYPES = ['.mp4', '.mkv', '.avi', '.mov', '.wmv'];

@@ -48,10 +48,10 @@ export const DEFAULT_SETTINGS: Settings = {
 }
 
 export const DEFAULT_APP_DATA: AppData = {
-  version: '1.0.0',
+  version: '1.2.0',
   animeList: []
 }
 
-export const APP_VERSION = '1.0.0'
+export const APP_VERSION = '1.2.0'
 
 export const SUPPORTED_FILE_TYPES = ['.mp4', '.mkv', '.avi', '.mov', '.wmv']

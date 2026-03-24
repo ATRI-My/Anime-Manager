@@ -7,6 +7,7 @@ import { AppDataProvider, useAppDataContext } from './contexts/AppDataContext';
 import ToastContainer from './components/common/ToastContainer';
 import { initLogger } from './utils/logger';
 import { useTranslation } from './hooks';
+import { APP_VERSION } from '../shared/constants';
 
 type TabType = 'query' | 'write' | 'settings';
 
@@ -84,7 +85,10 @@ const AppContent: React.FC = () => {
         >
           <p>{t('app.footer.copyright')}</p>
           <p className="mt-1">
-            {t('app.footer.versionAndTab', { tab: tabs.find(tab => tab.id === activeTab)?.label ?? '' })}
+            {t('app.footer.versionAndTab', {
+              version: APP_VERSION,
+              tab: tabs.find(tab => tab.id === activeTab)?.label ?? ''
+            })}
           </p>
         </footer>
       </div>
