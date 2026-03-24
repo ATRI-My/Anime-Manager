@@ -1,6 +1,6 @@
 {
   "name": "anime-manager",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "动漫资源管理器桌面应用",
   "main": "dist/main/index.js",
   "scripts": {
@@ -40,15 +40,14 @@
           "target": "portable",
           "arch": ["x64"]
         }
-      ],
-      "sign": false,
-      "signAndEditExecutable": false,
-      "signDlls": false
+      ]
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName} Setup ${version}.${ext}"
+    },
+    "publish": null
   },
   "keywords": [
     "anime",
