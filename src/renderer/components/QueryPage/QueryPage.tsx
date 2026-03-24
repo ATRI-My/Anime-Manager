@@ -20,6 +20,7 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
   const { animeList, loading, error } = state;
   const virtualScroll = useVirtualScrollConfig();
   const [searchQuery, setSearchQuery] = useState('');
+  const [liveQuery, setLiveQuery] = useState('');
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const theme = state.settings?.theme || 'light';
   const isDark = theme === 'dark';
@@ -30,19 +31,28 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
     return fuzzySearch(searchQuery, animeList);
   }, [searchQuery, animeList]);
 
-  // 获取建议列表（动漫标题）
+  // 建议列表基于实时输入（不走防抖）计算，保证下拉框跟手更新
   const suggestions = useMemo(() => {
-    return animeList.map(anime => anime.title);
-  }, [animeList]);
+    if (!liveQuery.trim()) {
+      return animeList.map(anime => anime.title);
+    }
+    return fuzzySearch(liveQuery, animeList).map(anime => anime.title);
+  }, [animeList, liveQuery]);
 
-  // 处理搜索
+  // 处理搜索（防抖后触发，用于过滤主列表）
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+  };
+
+  // 实时输入变化（无防抖，用于更新建议列表）
+  const handleQueryChange = (query: string) => {
+    setLiveQuery(query);
   };
 
   // 处理建议选择
   const handleSuggestionSelect = (suggestion: string) => {
     setSearchQuery(suggestion);
+    setLiveQuery(suggestion);
   };
 
   // 处理动漫选择
@@ -135,6 +145,7 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
           <SearchBar 
             placeholder={t('query.searchPlaceholder')}
             onSearch={handleSearch}
+            onQueryChange={handleQueryChange}
             suggestions={suggestions}
             onSuggestionSelect={handleSuggestionSelect}
           />

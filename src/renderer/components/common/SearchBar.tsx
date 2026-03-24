@@ -5,6 +5,7 @@ import { useTheme, useTranslation } from '../../hooks';
 interface SearchBarProps {
   placeholder?: string;
   onSearch: (query: string) => void;
+  onQueryChange?: (query: string) => void;
   className?: string;
   debounceDelay?: number;
   suggestions?: string[];
@@ -14,6 +15,7 @@ interface SearchBarProps {
 const SearchBar: React.FC<SearchBarProps> = ({ 
   placeholder, 
   onSearch,
+  onQueryChange,
   className = '',
   debounceDelay = 300,
   suggestions = [],
@@ -52,12 +54,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const handleClear = () => {
     setQuery('');
     setShowSuggestions(false);
+    onQueryChange?.('');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
-    setShowSuggestions(value.length > 0 && suggestions.length > 0);
+    // 只要有输入内容就显示建议框，suggestions 由父组件实时更新
+    setShowSuggestions(value.length > 0);
+    onQueryChange?.(value);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
