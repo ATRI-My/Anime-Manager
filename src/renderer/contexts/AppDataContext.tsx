@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { Anime, Episode, AppData, Settings, ToolConfig } from '../../shared/types';
-import { DEFAULT_APP_DATA, DEFAULT_SETTINGS } from '../../shared/constants';
+import { DEFAULT_APP_DATA, DEFAULT_SETTINGS, APP_VERSION } from '../../shared/constants';
 import { generateId, formatDate } from '../../shared/utils';
+import { validateAnimeList } from '../../shared/validation';
 import '../../renderer/global.d.ts';
 
 export interface AppDataState {
@@ -100,9 +101,12 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
       
       const content = await window.electronAPI?.readFile?.(targetFilePath);
       
-      // 验证数据格式
-      if (!content || typeof content !== 'object') {
+      if (!content || !Array.isArray(content.animeList)) {
         throw new Error('文件格式无效');
+      }
+      const validation = validateAnimeList(content.animeList);
+      if (!validation.isValid) {
+        throw new Error(`数据格式无效: ${validation.errors.join(', ')}`);
       }
       
       const appData = content as AppData;
@@ -149,7 +153,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
       }
       
       const appData: AppData = {
-        version: '1.0.0',
+        version: APP_VERSION,
         animeList: state.animeList,
       };
       
@@ -183,7 +187,6 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
 
   // 文件操作
   const newFile = useCallback(async () => {
-    console.log('newFile');
     setState(prev => ({
       ...prev,
       animeList: DEFAULT_APP_DATA.animeList,
@@ -195,13 +198,11 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
   }, []);
 
   const openFile = useCallback(async () => {
-    console.log('openFile');
     return await loadFromFile();
   }, [loadFromFile]);
 
   // 工具方法
   const reloadData = useCallback(async () => {
-    console.log('reloadData');
     if (!state.currentFilePath) {
       setState(prev => ({ ...prev, error: '没有打开的文件可以重新加载' }));
       return;
@@ -211,14 +212,10 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
   }, [state.currentFilePath, loadFromFile]);
 
   const refreshState = useCallback(() => {
-    console.log('refreshState');
-    // 只是触发一次状态更新，让React重新渲染
-    // 不重新从磁盘加载数据
     setState(prev => ({ ...prev }));
   }, []);
 
   const saveAsFile = useCallback(async () => {
-    console.log('saveAsFile');
     const result = await saveToFile();
     
     // 保存成功后，更新内存中的数据源路径
@@ -229,9 +226,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
   }, [saveToFile]);
 
   const saveFile = useCallback(async () => {
-    console.log('saveFile');
     if (!state.currentFilePath) {
-      console.log('没有文件路径，调用 saveAsFile');
       return await saveAsFile();
     }
     
@@ -565,18 +560,12 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        console.log('初始化加载动漫数据...');
-        
-        // 尝试从localStorage获取上次打开的文件路径
         const lastFilePath = localStorage.getItem('lastAnimeDataFilePath');
         
         if (lastFilePath) {
-          console.log('找到上次打开的文件路径:', lastFilePath);
           try {
-            // 尝试加载上次打开的文件
             const data = await window.electronAPI?.readFile?.(lastFilePath);
             if (data && data.animeList) {
-              console.log('从上次文件加载数据成功，动漫数量:', data.animeList.length);
               const savedSettings = await window.electronAPI?.getSettings?.().catch(() => null);
               setState(prev => ({
                 ...prev,
@@ -592,10 +581,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
           }
         }
         
-        // 回退到默认数据
-        console.log('使用默认数据源...');
         const data = await window.electronAPI?.readAnimeData?.();
-        console.log('加载到的数据:', data);
         
         const savedSettings = await window.electronAPI?.getSettings?.().catch(() => null);
         if (data && data.animeList) {
@@ -605,9 +591,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
             settings: savedSettings ?? DEFAULT_SETTINGS,
             loading: false,
           }));
-          console.log('数据加载成功，动漫数量:', data.animeList.length);
         } else {
-          console.log('没有数据或数据格式错误，使用默认数据');
           setState(prev => ({
             ...prev,
             animeList: DEFAULT_APP_DATA.animeList,

@@ -1,12 +1,11 @@
-// 类型在函数签名中使用，不需要显式导入
-// Anime和Episode类型通过any参数隐式使用
+import type { Anime, Episode } from './types'
 
 export interface ValidationResult {
   isValid: boolean;
   errors: string[];
 }
 
-export function validateAnime(anime: any): ValidationResult {
+export function validateAnime(anime: Anime): ValidationResult {
   const errors: string[] = [];
 
   // 检查必填字段
@@ -70,7 +69,7 @@ export function validateAnime(anime: any): ValidationResult {
   };
 }
 
-export function validateEpisode(episode: any): ValidationResult {
+export function validateEpisode(episode: Episode): ValidationResult {
   const errors: string[] = [];
 
   // 检查必填字段
@@ -129,7 +128,7 @@ export function validateEpisode(episode: any): ValidationResult {
 }
 
 // 辅助函数：验证Anime数组
-export function validateAnimeList(animeList: any[]): ValidationResult {
+export function validateAnimeList(animeList: Anime[]): ValidationResult {
   const errors: string[] = [];
   const animeIds = new Set<string>();
 

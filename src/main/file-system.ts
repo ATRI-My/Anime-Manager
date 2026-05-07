@@ -4,6 +4,7 @@ import path from 'path'
 import { promisify } from 'util'
 import { AppData, ToolConfig } from '../shared/types'
 import { DEFAULT_APP_DATA, DEFAULT_SETTINGS } from '../shared/constants'
+import { validateAnimeList } from '../shared/validation'
 
 const readFileAsync = promisify(fs.readFile)
 const writeFileAsync = promisify(fs.writeFile)
@@ -75,6 +76,23 @@ function migrateSettings(data: any): Settings {
   }
 }
 
+function parseCommandArgs(argsStr: string): string[] {
+  const args: string[] = []
+  let current = ''
+  let inQuotes = false
+  for (const char of argsStr) {
+    if (char === '"') {
+      inQuotes = !inQuotes
+    } else if (char === ' ' && !inQuotes) {
+      if (current) { args.push(current); current = '' }
+    } else {
+      current += char
+    }
+  }
+  if (current) args.push(current)
+  return args
+}
+
 function getSettingsPath(): string {
   const userDataPath = app.getPath('userData')
   return path.join(userDataPath, SETTINGS_FILE_NAME)
@@ -109,7 +127,12 @@ export function registerFileSystemHandlers(): void {
   ipcMain.handle('read-file', async (_event, filePath: string) => {
     try {
       const data = await readFileAsync(filePath, 'utf8')
-      return JSON.parse(data)
+      const content = JSON.parse(data)
+      const validation = validateAnimeList(content?.animeList ?? [])
+      if (!validation.isValid) {
+        throw new Error(`数据格式无效: ${validation.errors.join(', ')}`)
+      }
+      return content
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       throw new Error(`读取文件失败: ${errorMessage}`)
@@ -187,18 +210,22 @@ export function registerFileSystemHandlers(): void {
       const typeConfig = toolConfig[linkType]
 
       if (typeConfig?.enabled && typeConfig.path) {
-        const { exec } = await import('child_process')
-        const execAsync = promisify(exec)
+        const { spawn } = await import('child_process')
 
-        let command = `"${typeConfig.path}"`
+        const argsStr = typeConfig.arguments
+          ? typeConfig.arguments.replace(/{url}/g, url)
+          : url
 
-        if (typeConfig.arguments) {
-          command += ' ' + typeConfig.arguments.replace(/{url}/g, `"${url}"`)
-        } else {
-          command += ` "${url}"`
-        }
+        const args = parseCommandArgs(argsStr)
 
-        await execAsync(command)
+        await new Promise<void>((resolve, reject) => {
+          const child = spawn(typeConfig.path, args, { shell: false, windowsHide: true })
+          child.on('error', reject)
+          child.on('close', (code) => {
+            if (code === 0) resolve()
+            else reject(new Error(`工具进程退出码: ${code}`))
+          })
+        })
         return { success: true }
       }
 
@@ -222,15 +249,10 @@ export function registerFileSystemHandlers(): void {
 
   ipcMain.handle('read-anime-data', async () => {
     try {
-      console.log('开始读取动漫数据...')
       await ensureAnimeDataFileExists()
       const animeDataPath = getAnimeDataPath()
-      console.log('动漫数据文件路径:', animeDataPath)
       const data = await readFileAsync(animeDataPath, 'utf8')
-      console.log('读取到的文件内容长度:', data.length)
       const parsedData = JSON.parse(data)
-      console.log('解析后的数据版本:', parsedData.version)
-      console.log('动漫数量:', parsedData.animeList?.length || 0)
       return parsedData
     } catch (error) {
       console.error('读取动漫数据失败，返回默认数据:', error)

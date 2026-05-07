@@ -63,14 +63,11 @@ const QueryPage: React.FC<QueryPageProps> = ({ className = '' }) => {
   // 查询页：只用于查看动漫和剧集详情，不提供编辑/删除动漫功能
 
   // 处理剧集选择
-  const handleSelectEpisode = (episode: Episode) => {
-    console.log('选择剧集:', episode);
+  const handleSelectEpisode = (_episode: Episode) => {
   };
 
   // 处理复制链接
-  const handleCopyUrl = (url: string) => {
-    console.log('复制链接:', url);
-    // 这里可以添加Toast反馈，但EpisodeList组件已经有视觉反馈了
+  const handleCopyUrl = (_url: string) => {
   };
 
   // 处理打开链接

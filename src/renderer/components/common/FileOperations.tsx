@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAppDataContext, useToast, useTranslation } from '../../hooks';
 import { useTheme } from '../../hooks';
+import { APP_VERSION } from '../../../shared/constants';
 
 interface FileOperationsProps {
   className?: string;
@@ -176,7 +177,7 @@ const FileOperations: React.FC<FileOperationsProps> = ({ className = '' }) => {
             <div className={`text-sm ${text.muted}`}>
               <div className="flex items-center gap-4">
                 <span>{t('file.animeCount')} <span className={`font-medium ${text.secondary}`}>{state.animeList.length}</span></span>
-                <span>{t('file.dataVersion')} <span className={`font-medium ${text.secondary}`}>1.0.0</span></span>
+                <span>{t('file.dataVersion')} <span className={`font-medium ${text.secondary}`}>{APP_VERSION}</span></span>
               </div>
             </div>
           </div>

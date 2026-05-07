@@ -32,11 +32,9 @@ function createWindow() {
     for (const htmlPath of htmlPaths) {
       try {
         mainWindow.loadFile(htmlPath)
-        console.log(`成功加载HTML文件: ${htmlPath}`)
         loaded = true
         break
       } catch (error) {
-        console.log(`无法加载HTML文件: ${htmlPath}`, error)
       }
     }
     
