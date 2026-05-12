@@ -401,9 +401,11 @@ const WritePage: React.FC = () => {
           animeList={state.animeList}
           onClose={() => setShowImageMatch(false)}
           onApply={async (pathMatches) => {
-            for (const [animeId, imagePath] of pathMatches) {
-              await actions.updateAnime(animeId, { imagePath });
-            }
+            const updates = Array.from(pathMatches.entries()).map(([animeId, imagePath]) => ({
+              id: animeId,
+              changes: { imagePath }
+            }));
+            await actions.batchUpdateAnime(updates);
             setShowImageMatch(false);
             addToast('success', '导入匹配封面', '封面匹配并导入成功');
           }}

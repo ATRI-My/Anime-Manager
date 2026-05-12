@@ -292,17 +292,18 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
         return { success: false, error: '观看方式不能为空' };
       }
       
-      const updatedList = state.animeList.map(anime => 
-        anime.id === id 
-          ? { ...anime, ...safeUpdates, updatedAt: formatDate(new Date()) }
-          : anime
-      );
-      
-      setState(prev => ({
-        ...prev,
-        animeList: updatedList,
-        isModified: true,
-      }));
+      setState(prev => {
+        const updatedList = prev.animeList.map(anime => 
+          anime.id === id 
+            ? { ...anime, ...safeUpdates, updatedAt: formatDate(new Date()) }
+            : anime
+        );
+        return {
+          ...prev,
+          animeList: updatedList,
+          isModified: true,
+        };
+      });
 
       return { success: true };
     } catch (error) {
@@ -310,7 +311,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
       const errorMessage = error instanceof Error ? error.message : '更新动漫失败';
       return { success: false, error: errorMessage };
     }
-  }, [state.animeList]);
+  }, []);
 
   const deleteAnime = useCallback(async (id: string) => {
     try {
