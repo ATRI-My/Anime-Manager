@@ -9,6 +9,7 @@ import type { TranslationKey } from '../../i18n/translations';
 import { Anime } from '../../../shared/types';
 import { validateAnime } from '../../../shared/validation';
 import type { EpisodeFormData } from '../common/InlineEpisodeForm';
+import AnimeImage from '../common/AnimeImage';
 import toast from '../../utils/toast';
 
 interface AnimeFormData {
@@ -306,20 +307,29 @@ const WritePage: React.FC = () => {
                   {state.animeList.map((anime) => (
                      <li
                       key={anime.id}
-                      className={`p-3 cursor-pointer ${
+                      className={`flex items-center p-3 cursor-pointer ${
                         isDark ? 'hover:bg-neutral-700' : 'hover:bg-gray-50'
                       } ${
                         selectedAnimeId === anime.id 
                           ? isDark 
                             ? 'bg-blue-900/30 border-l-4 border-blue-400' 
                             : 'bg-blue-50 border-l-4 border-blue-500' 
-                          : ''
+                          : 'border-l-4 border-transparent'
                       }`}
                       onClick={() => handleSelectAnime(anime)}
                     >
-                      <div className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{anime.title}</div>
-                      <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {t('write.episodesCount', { n: String(anime.episodes.length) })} • {t(('watchMethod.' + anime.watchMethod) as any)}
+                      <div className="flex-shrink-0 w-12 mr-3">
+                        <AnimeImage
+                          imagePath={anime.imagePath}
+                          minHeight="0"
+                          className="rounded"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className={`font-medium truncate ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{anime.title}</div>
+                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {t('write.episodesCount', { n: String(anime.episodes.length) })} • {t(('watchMethod.' + anime.watchMethod) as any)}
+                        </div>
                       </div>
                     </li>
                   ))}

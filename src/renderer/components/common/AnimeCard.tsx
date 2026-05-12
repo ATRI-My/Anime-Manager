@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Anime } from '../../../shared/types';
 import { useTheme, useTranslation } from '../../hooks';
 import type { TranslationKey } from '../../i18n/translations';
+import AnimeImage from './AnimeImage';
 
 interface AnimeCardProps {
   anime: Anime;
@@ -70,6 +71,11 @@ const AnimeCard: React.FC<AnimeCardProps> = ({
       className={`${bg.card} rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer ${className}`}
       onClick={handleCardClick}
     >
+      <AnimeImage
+        imagePath={anime.imagePath}
+        className="rounded-t-lg"
+        minHeight="160px"
+      />
       <div className="p-6">
         <div className="flex justify-between items-start mb-4">
           <div className="flex-1">
