@@ -73,7 +73,7 @@ const AnimeCard: React.FC<AnimeCardProps> = ({
     >
       <AnimeImage
         imagePath={anime.imagePath}
-        className="rounded-t-lg"
+        className=""
         minHeight="160px"
       />
       <div className="p-6">

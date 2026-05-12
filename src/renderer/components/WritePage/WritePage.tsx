@@ -321,7 +321,7 @@ const WritePage: React.FC = () => {
                       <div className="flex-shrink-0 w-12 mr-3">
                         <AnimeImage
                           imagePath={anime.imagePath}
-                          minHeight="0"
+                          minHeight="48px"
                           className="rounded"
                         />
                       </div>
