@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Anime } from '../../../shared/types';
 import { useTheme } from '../../hooks';
 
@@ -19,32 +19,18 @@ const ImageMatchDialog: React.FC<ImageMatchDialogProps> = ({ animeList, onClose,
   const [imageFiles, setImageFiles] = useState<ImageFile[]>([]);
   const [matches, setMatches] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [unmatchedImages, setUnmatchedImages] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    const init = async () => {
-      const folder = await window.electronAPI.pickImageFolder?.();
-      if (!folder || cancelled) {
-        if (!cancelled) onClose();
-        return;
-      }
-      setFolderPath(folder);
-      const files = await window.electronAPI.scanImageFolder?.(folder) || [];
-      if (cancelled) return;
-      setImageFiles(files);
-      doMatch(files);
-    };
-    init();
-    return () => { cancelled = true; };
-  }, []);
+  const folderSeqRef = useRef(0);
+  const animeListRef = useRef(animeList);
+  animeListRef.current = animeList;
 
   const doMatch = (files: ImageFile[]) => {
     const newMatches = new Map<string, string>();
     const availableFiles = new Map(files.map(f => [f.nameWithoutExt, f.fileName]));
+    const list = animeListRef.current;
 
-    // Exact match first
-    for (const anime of animeList) {
+    for (const anime of list) {
       const aname = anime.title.toLowerCase();
       for (const [nameWithoutExt, fileName] of availableFiles) {
         if (nameWithoutExt.toLowerCase() === aname) {
@@ -55,8 +41,7 @@ const ImageMatchDialog: React.FC<ImageMatchDialogProps> = ({ animeList, onClose,
       }
     }
 
-    // Contains match second
-    for (const anime of animeList) {
+    for (const anime of list) {
       if (newMatches.has(anime.id)) continue;
       const aname = anime.title.toLowerCase();
       for (const [nameWithoutExt, fileName] of availableFiles) {
@@ -70,9 +55,35 @@ const ImageMatchDialog: React.FC<ImageMatchDialogProps> = ({ animeList, onClose,
     }
 
     setMatches(newMatches);
-    setUnmatchedImages(new Set(availableFiles.values()));
     setLoading(false);
+    setError(null);
   };
+
+  const initFolder = async () => {
+    folderSeqRef.current += 1;
+    const seq = folderSeqRef.current;
+    try {
+      const folder = await window.electronAPI.pickImageFolder?.();
+      if (!folder) {
+        onClose();
+        return;
+      }
+      if (seq !== folderSeqRef.current) return;
+      setFolderPath(folder);
+      const files = await window.electronAPI.scanImageFolder?.(folder) || [];
+      if (seq !== folderSeqRef.current) return;
+      setImageFiles(files);
+      doMatch(files);
+    } catch {
+      if (seq !== folderSeqRef.current) return;
+      setLoading(false);
+      setError('扫描失败，请重试');
+    }
+  };
+
+  useEffect(() => {
+    initFolder();
+  }, []);
 
   const handleChangeMatch = (animeId: string, fileName: string) => {
     setMatches(prev => {
@@ -87,27 +98,40 @@ const ImageMatchDialog: React.FC<ImageMatchDialogProps> = ({ animeList, onClose,
   };
 
   const handleChangeFolder = async () => {
-    const folder = await window.electronAPI.pickImageFolder?.();
-    if (!folder) return;
-    setFolderPath(folder);
-    setLoading(true);
-    const files = await window.electronAPI.scanImageFolder?.(folder) || [];
-    setImageFiles(files);
-    setMatches(new Map());
-    setUnmatchedImages(new Set());
-    setLoading(false);
-    doMatch(files);
+    setError(null);
+    folderSeqRef.current += 1;
+    const seq = folderSeqRef.current;
+    try {
+      const folder = await window.electronAPI.pickImageFolder?.();
+      if (!folder) return;
+      if (seq !== folderSeqRef.current) return;
+      setFolderPath(folder);
+      setLoading(true);
+      const files = await window.electronAPI.scanImageFolder?.(folder) || [];
+      if (seq !== folderSeqRef.current) return;
+      setImageFiles(files);
+      doMatch(files);
+    } catch {
+      if (seq !== folderSeqRef.current) return;
+      setLoading(false);
+      setError('扫描失败，请重试');
+    }
   };
 
   const matchedCount = matches.size;
   const totalAnime = animeList.length;
   const unmatchedAnimeCount = totalAnime - matchedCount;
 
+  const unmatchedImagesCount = useMemo(() => {
+    const matchedFileNames = new Set(matches.values());
+    return imageFiles.filter(f => !matchedFileNames.has(f.fileName)).length;
+  }, [imageFiles, matches]);
+
   const handleConfirm = () => {
     const pathMatches = new Map<string, string>();
     const folder = folderPath || '';
     for (const [animeId, fileName] of matches) {
-      pathMatches.set(animeId, folder + '\\' + fileName);
+      pathMatches.set(animeId, `${folder}/${fileName}`);
     }
     onApply(pathMatches);
   };
@@ -116,8 +140,22 @@ const ImageMatchDialog: React.FC<ImageMatchDialogProps> = ({ animeList, onClose,
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
         <div className={`rounded-lg shadow-xl p-8 ${isDark ? 'bg-neutral-800' : 'bg-white'}`}>
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto" />
-          <p className={`mt-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>扫描文件夹中...</p>
+          {error ? (
+            <div className="text-center">
+              <p className={`text-red-500 mb-4`}>扫描失败，请重试</p>
+              <button
+                onClick={initFolder}
+                className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+              >
+                重试
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto" />
+              <p className={`mt-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>扫描文件夹中...</p>
+            </>
+          )}
         </div>
       </div>
     );
@@ -163,29 +201,36 @@ const ImageMatchDialog: React.FC<ImageMatchDialogProps> = ({ animeList, onClose,
               {animeList.map(anime => {
                 const matched = matches.get(anime.id);
                 const hasMatch = !!matched;
+                const takenByOthers = new Set(
+                  Array.from(matches.entries())
+                    .filter(([id]) => id !== anime.id)
+                    .map(([, fn]) => fn)
+                );
+                const availableOptions = imageFiles.filter(
+                  f => !takenByOthers.has(f.fileName)
+                );
                 return (
                   <tr key={anime.id} className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                     <td className={`py-2 ${hasMatch ? '' : (isDark ? 'text-gray-500' : 'text-gray-400')}`}>
                       {anime.title}
                     </td>
                     <td className="py-2">
-                      {hasMatch ? (
-                        <span className="text-green-600">{matched}</span>
-                      ) : (
-                        <select
-                          className={`text-sm rounded border px-2 py-1 ${isDark ? 'bg-neutral-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-700'}`}
-                          value="__none__"
-                          onChange={e => handleChangeMatch(anime.id, e.target.value)}
-                        >
-                          <option value="__none__">手动选择...</option>
-                          {imageFiles
-                            .filter(f => !Array.from(matches.values()).includes(f.fileName))
-                            .map(f => (
-                              <option key={f.fileName} value={f.fileName}>{f.fileName}</option>
-                            ))
-                          }
-                        </select>
-                      )}
+                      <select
+                        className={`text-sm rounded border px-2 py-1 ${isDark ? 'bg-neutral-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-700'}`}
+                        value={matched || '__none__'}
+                        onChange={e => handleChangeMatch(anime.id, e.target.value)}
+                      >
+                        <option value="__none__">手动选择...</option>
+                        {matched && (
+                          <option value={matched}>{matched} ✓</option>
+                        )}
+                        {availableOptions
+                          .filter(f => f.fileName !== matched)
+                          .map(f => (
+                            <option key={f.fileName} value={f.fileName}>{f.fileName}</option>
+                          ))
+                        }
+                      </select>
                     </td>
                     <td className="py-2">
                       {hasMatch ? (
@@ -203,7 +248,7 @@ const ImageMatchDialog: React.FC<ImageMatchDialogProps> = ({ animeList, onClose,
 
         <div className={`p-6 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
           <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            未匹配番剧: {unmatchedAnimeCount}部 | 未匹配图片: {unmatchedImages.size}张
+            未匹配番剧: {unmatchedAnimeCount}部 | 未匹配图片: {unmatchedImagesCount}张
           </div>
           <div className="flex space-x-2">
             <button
