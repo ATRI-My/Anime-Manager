@@ -340,7 +340,11 @@ export function registerFileSystemHandlers(): void {
       const files = await promisify(fs.readdir)(folderPath)
       const imageFiles = files.filter(file => {
         const ext = path.extname(file).toLowerCase()
-        return IMAGE_EXTENSIONS.includes(ext)
+        if (!IMAGE_EXTENSIONS.includes(ext)) return false
+        const nameWithoutExt = path.basename(file, ext)
+        // 过滤纯十六进制hash文件名（如 4e321458a2...jpg），它们无法通过名称匹配
+        if (/^[0-9a-f]{24,}$/i.test(nameWithoutExt)) return false
+        return true
       })
       return imageFiles.map(file => ({
         fileName: file,
