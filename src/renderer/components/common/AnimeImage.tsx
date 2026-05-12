@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../hooks';
 
 interface AnimeImageProps {
   imagePath?: string;
@@ -11,26 +12,32 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
   className = '',
   minHeight = '120px',
 }) => {
+  const { isDark } = useTheme();
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
-    const loadImage = async () => {
-      if (!imagePath) return;
-
-      const result = await window.electronAPI.readImageData?.(imagePath);
-      if (!cancelled) {
-        if (result) {
-          setDataUrl(result);
-        }
-      }
-    };
-
     setDataUrl(null);
     setError(false);
-    loadImage();
+
+    if (!imagePath) return;
+
+    window.electronAPI.readImageData?.(imagePath)
+      .then((result) => {
+        if (!cancelled) {
+          if (result) {
+            setDataUrl(result);
+            setError(false);
+          } else {
+            setError(true);
+          }
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      });
 
     return () => {
       cancelled = true;
@@ -40,7 +47,7 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
   if (!dataUrl || error) {
     return (
       <div
-        className={`flex items-center justify-center bg-gray-100 dark:bg-neutral-700 text-gray-400 dark:text-gray-500 ${className}`}
+        className={`flex items-center justify-center ${isDark ? 'bg-neutral-700 text-gray-500' : 'bg-gray-100 text-gray-400'} ${className}`}
         style={{ minHeight }}
       >
         <svg
@@ -64,9 +71,9 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
     <div className={className}>
       <img
         src={dataUrl}
-        alt="anime cover"
+        alt=""
+        className="w-full h-auto object-contain"
         onError={() => setError(true)}
-        style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
       />
     </div>
   );
