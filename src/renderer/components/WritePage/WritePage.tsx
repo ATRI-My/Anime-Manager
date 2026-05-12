@@ -10,6 +10,7 @@ import { Anime } from '../../../shared/types';
 import { validateAnime } from '../../../shared/validation';
 import type { EpisodeFormData } from '../common/InlineEpisodeForm';
 import AnimeImage from '../common/AnimeImage';
+import ImageMatchDialog from './ImageMatchDialog';
 import toast from '../../utils/toast';
 
 interface AnimeFormData {
@@ -31,6 +32,7 @@ const WritePage: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const theme = state.settings?.theme || 'light';
   const isDark = theme === 'dark';
+  const [showImageMatch, setShowImageMatch] = useState(false);
   const { t } = useTranslation();
 
   // 处理文件操作 - 通过 FileOperations 组件处理
@@ -289,12 +291,21 @@ const WritePage: React.FC = () => {
           <div className={`rounded-lg shadow p-6 h-full ${isDark ? 'bg-neutral-800' : 'bg-white'}`}>
             <div className="flex justify-between items-center mb-4">
               <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t('write.animeList')}</h3>
-              <button
-                onClick={handleAddAnime}
-                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-              >
-                {t('write.addAnime')}
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setShowImageMatch(true)}
+                  disabled={state.animeList.length === 0}
+                  className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  导入匹配封面
+                </button>
+                <button
+                  onClick={handleAddAnime}
+                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  {t('write.addAnime')}
+                </button>
+              </div>
             </div>
             
             <div className={`flex-1 overflow-y-auto border rounded-lg ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
@@ -385,6 +396,19 @@ const WritePage: React.FC = () => {
       </div>
 
 
+      {showImageMatch && (
+        <ImageMatchDialog
+          animeList={state.animeList}
+          onClose={() => setShowImageMatch(false)}
+          onApply={async (pathMatches) => {
+            for (const [animeId, imagePath] of pathMatches) {
+              await actions.updateAnime(animeId, { imagePath });
+            }
+            setShowImageMatch(false);
+            addToast('success', '导入匹配封面', '封面匹配并导入成功');
+          }}
+        />
+      )}
     </div>
   );
 };
