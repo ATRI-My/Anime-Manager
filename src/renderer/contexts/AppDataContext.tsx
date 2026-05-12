@@ -25,6 +25,7 @@ export interface AppDataActions {
   addAnime: (animeData: Omit<Anime, 'id' | 'createdAt' | 'updatedAt'>) => Promise<{ success: boolean; error?: string }>;
   updateAnime: (id: string, updates: Partial<Anime>) => Promise<{ success: boolean; error?: string }>;
   deleteAnime: (id: string) => Promise<{ success: boolean; error?: string }>;
+  batchUpdateAnime: (updates: Array<{ id: string; changes: Partial<Anime> }>) => Promise<{ success: boolean; error?: string }>;
   
   // 剧集操作 - 修改返回值包含updatedAnime
   addEpisode: (animeId: string, episodeData: Omit<Episode, 'id'>) => Promise<{ 
@@ -334,6 +335,32 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
     }
   }, [state.animeList]);
 
+  const batchUpdateAnime = useCallback(async (updates: Array<{ id: string; changes: Partial<Anime> }>) => {
+    try {
+      const updatedList = state.animeList.map(anime => {
+        const update = updates.find(u => u.id === anime.id);
+        if (update) {
+          return {
+            ...anime,
+            ...update.changes,
+            updatedAt: formatDate(new Date())
+          };
+        }
+        return anime;
+      });
+      
+      setState(prev => ({
+        ...prev,
+        animeList: updatedList,
+        isModified: true
+      }));
+      
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : '批量更新失败' };
+    }
+  }, [state.animeList]);
+
   // 剧集操作方法
   const addEpisode = useCallback(async (animeId: string, episodeData: Omit<Episode, 'id'>) => {
     try {
@@ -622,6 +649,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
       addAnime,
       updateAnime,
       deleteAnime,
+      batchUpdateAnime,
       addEpisode,
       updateEpisode,
       deleteEpisode,
