@@ -7,11 +7,6 @@ interface AnimeImageProps {
   minHeight?: string;
 }
 
-const toProtocolUrl = (imagePath: string) => {
-  const normalized = imagePath.replace(/\\/g, '/');
-  return `anime-cover:///${encodeURIComponent(normalized)}`;
-};
-
 const AnimeImage: React.FC<AnimeImageProps> = ({
   imagePath,
   className = '',
@@ -45,6 +40,8 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
     );
   }
 
+  const fileUrl = `file:///${encodeURI(imagePath.replace(/\\/g, '/'))}`;
+
   return (
     <div className={className}>
       {!loaded && (
@@ -54,7 +51,7 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
         />
       )}
       <img
-        src={toProtocolUrl(imagePath)}
+        src={fileUrl}
         alt=""
         className={`w-full h-auto object-contain ${loaded ? '' : 'hidden'}`}
         onLoad={() => setLoaded(true)}
