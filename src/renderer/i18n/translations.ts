@@ -233,6 +233,25 @@ const zhCN = {
   'toolConfig.linkTypeUrl': '网址',
   'toolConfig.linkTypeMagnet': '磁力',
   'toolConfig.linkTypeLocalFile': '本地文件',
+
+  // 图片导入
+  'write.importCover': '导入匹配封面',
+  'write.toast.importCover': '封面匹配并导入成功',
+  'imageMatch.title': '导入匹配封面',
+  'imageMatch.scanFolder': '扫描文件夹:',
+  'imageMatch.changeFolder': '更换文件夹',
+  'imageMatch.matchResult': '匹配到 {matched} / {total} 部番剧',
+  'imageMatch.colAnime': '番剧名',
+  'imageMatch.colFile': '匹配的图片文件',
+  'imageMatch.colStatus': '状态',
+  'imageMatch.matched': '已匹配',
+  'imageMatch.unmatched': '未匹配',
+  'imageMatch.manualSelect': '手动选择...',
+  'imageMatch.unmatchedAnime': '未匹配番剧: {n}部',
+  'imageMatch.unmatchedImages': '未匹配图片: {n}张',
+  'imageMatch.noImages': '所选文件夹中未找到图片文件',
+  'imageMatch.cancel': '取消',
+  'imageMatch.confirm': '确认',
 } as const;
 
 const enUS: Record<TranslationKey, string> = {
@@ -454,6 +473,24 @@ const enUS: Record<TranslationKey, string> = {
   'toolConfig.linkTypeUrl': 'URL',
   'toolConfig.linkTypeMagnet': 'Magnet',
   'toolConfig.linkTypeLocalFile': 'Local file',
+
+  'write.importCover': 'Import Covers',
+  'write.toast.importCover': 'Covers matched and imported',
+  'imageMatch.title': 'Import Covers',
+  'imageMatch.scanFolder': 'Scan folder:',
+  'imageMatch.changeFolder': 'Change folder',
+  'imageMatch.matchResult': 'Matched {matched} / {total} anime',
+  'imageMatch.colAnime': 'Anime',
+  'imageMatch.colFile': 'Matched Image',
+  'imageMatch.colStatus': 'Status',
+  'imageMatch.matched': 'Matched',
+  'imageMatch.unmatched': 'Unmatched',
+  'imageMatch.manualSelect': 'Manual select...',
+  'imageMatch.unmatchedAnime': 'Unmatched anime: {n}',
+  'imageMatch.unmatchedImages': 'Unmatched images: {n}',
+  'imageMatch.noImages': 'No image files found in the selected folder',
+  'imageMatch.cancel': 'Cancel',
+  'imageMatch.confirm': 'Confirm',
 };
 
 const messages: Record<Locale, Record<TranslationKey, string>> = {
