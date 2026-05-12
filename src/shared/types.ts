@@ -16,6 +16,7 @@ export interface Anime {
   episodes: Episode[]
   createdAt: string
   updatedAt: string
+  imagePath?: string
 }
 
 export interface AppData {

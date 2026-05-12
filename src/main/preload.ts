@@ -25,7 +25,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openWithTool: (url: string, toolConfig: ToolConfig) => ipcRenderer.invoke('open-with-tool', url, toolConfig),
   
   // 数据文件夹API
-  openDataFolder: () => ipcRenderer.invoke('open-data-folder')
+  openDataFolder: () => ipcRenderer.invoke('open-data-folder'),
+
+  // 图片API
+  pickImageFolder: () => ipcRenderer.invoke('pick-image-folder'),
+  scanImageFolder: (folderPath: string) => ipcRenderer.invoke('scan-image-folder', folderPath),
+  readImageData: (imagePath: string) => ipcRenderer.invoke('read-image-data', imagePath),
 })
 
   // 为TypeScript提供类型声明
@@ -43,6 +48,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
         saveSettings: (settings: Settings) => Promise<{ success: boolean }>
         openWithTool: (url: string, toolConfig: ToolConfig) => Promise<{ success: boolean; error?: string }>
         openDataFolder: () => Promise<{ success: boolean; error?: string }>
+        pickImageFolder: () => Promise<string | null>
+        scanImageFolder: (folderPath: string) => Promise<{ fileName: string; nameWithoutExt: string }[]>
+        readImageData: (imagePath: string) => Promise<string | null>
       }
     }
   }

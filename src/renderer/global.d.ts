@@ -12,6 +12,9 @@ interface ElectronAPI {
   openFileDialog?: () => Promise<{ canceled: boolean; filePaths: string[] }>
   saveFileDialog?: () => Promise<{ canceled: boolean; filePath: string }>
   openDataFolder?: () => Promise<{ success: boolean; error?: string }>
+  pickImageFolder?: () => Promise<string | null>
+  scanImageFolder?: (folderPath: string) => Promise<{ fileName: string; nameWithoutExt: string }[]>
+  readImageData?: (imagePath: string) => Promise<string | null>
 }
 
 declare global {

@@ -317,4 +317,60 @@ export function registerFileSystemHandlers(): void {
       return { success: false, error: errorMessage }
     }
   })
+
+  ipcMain.handle('pick-image-folder', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        title: '选择图片文件夹',
+        properties: ['openDirectory']
+      })
+      if (result.canceled || result.filePaths.length === 0) {
+        return null
+      }
+      return result.filePaths[0]
+    } catch (error) {
+      console.error('选择图片文件夹失败:', error)
+      return null
+    }
+  })
+
+  ipcMain.handle('scan-image-folder', async (_event, folderPath: string) => {
+    try {
+      const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
+      const files = await promisify(fs.readdir)(folderPath)
+      const imageFiles = files.filter(file => {
+        const ext = path.extname(file).toLowerCase()
+        return IMAGE_EXTENSIONS.includes(ext)
+      })
+      return imageFiles.map(file => ({
+        fileName: file,
+        nameWithoutExt: path.basename(file, path.extname(file))
+      }))
+    } catch (error) {
+      console.error('扫描图片文件夹失败:', error)
+      return []
+    }
+  })
+
+  ipcMain.handle('read-image-data', async (_event, imagePath: string) => {
+    try {
+      await accessAsync(imagePath, fs.constants.F_OK)
+      const ext = path.extname(imagePath).toLowerCase()
+      const mimeMap: Record<string, string> = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.bmp': 'image/bmp',
+      }
+      const mimeType = mimeMap[ext] || 'image/png'
+      const buffer = await readFileAsync(imagePath)
+      const base64 = buffer.toString('base64')
+      return `data:${mimeType};base64,${base64}`
+    } catch (error) {
+      console.error('读取图片失败:', error)
+      return null
+    }
+  })
 }
