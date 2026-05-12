@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../../hooks';
 
 interface AnimeImageProps {
@@ -7,48 +7,21 @@ interface AnimeImageProps {
   minHeight?: string;
 }
 
+const toProtocolUrl = (imagePath: string) => {
+  const normalized = imagePath.replace(/\\/g, '/');
+  return `anime-cover:///${encodeURIComponent(normalized)}`;
+};
+
 const AnimeImage: React.FC<AnimeImageProps> = ({
   imagePath,
   className = '',
   minHeight = '120px',
 }) => {
   const { isDark } = useTheme();
-  const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    setDataUrl(null);
-    setError(false);
-
-    if (!imagePath) return;
-
-    window.electronAPI.readImageData?.(imagePath)
-      .then((result) => {
-        if (!cancelled) {
-          if (result) {
-            setDataUrl(result);
-            setError(false);
-          } else {
-            console.warn('[AnimeImage] 读取图片失败，路径:', imagePath);
-            setError(true);
-          }
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          console.error('[AnimeImage] 读取图片异常，路径:', imagePath, err);
-          setError(true);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [imagePath]);
-
-  if (!dataUrl || error) {
+  if (!imagePath || error) {
     return (
       <div
         className={`flex items-center justify-center ${isDark ? 'bg-neutral-700 text-gray-500' : 'bg-gray-100 text-gray-400'} ${className}`}
@@ -74,10 +47,17 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
 
   return (
     <div className={className}>
+      {!loaded && (
+        <div
+          className={`flex items-center justify-center ${isDark ? 'bg-neutral-700' : 'bg-gray-100'}`}
+          style={{ minHeight }}
+        />
+      )}
       <img
-        src={dataUrl}
+        src={toProtocolUrl(imagePath)}
         alt=""
-        className="w-full h-auto object-contain"
+        className={`w-full h-auto object-contain ${loaded ? '' : 'hidden'}`}
+        onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
       />
     </div>
