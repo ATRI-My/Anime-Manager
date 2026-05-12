@@ -31,12 +31,16 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
             setDataUrl(result);
             setError(false);
           } else {
+            console.warn('[AnimeImage] 读取图片失败，路径:', imagePath);
             setError(true);
           }
         }
       })
-      .catch(() => {
-        if (!cancelled) setError(true);
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('[AnimeImage] 读取图片异常，路径:', imagePath, err);
+          setError(true);
+        }
       });
 
     return () => {
@@ -49,6 +53,7 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
       <div
         className={`flex items-center justify-center ${isDark ? 'bg-neutral-700 text-gray-500' : 'bg-gray-100 text-gray-400'} ${className}`}
         style={{ minHeight }}
+        title={imagePath || '无封面图片'}
       >
         <svg
           className="w-10 h-10"

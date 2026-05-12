@@ -354,8 +354,8 @@ export function registerFileSystemHandlers(): void {
 
   ipcMain.handle('read-image-data', async (_event, imagePath: string) => {
     try {
-      await accessAsync(imagePath, fs.constants.F_OK)
-      const ext = path.extname(imagePath).toLowerCase()
+      const normalizedPath = path.normalize(imagePath)
+      const ext = path.extname(normalizedPath).toLowerCase()
       const mimeMap: Record<string, string> = {
         '.jpg': 'image/jpeg',
         '.jpeg': 'image/jpeg',
@@ -365,11 +365,11 @@ export function registerFileSystemHandlers(): void {
         '.bmp': 'image/bmp',
       }
       const mimeType = mimeMap[ext] || 'image/png'
-      const buffer = await readFileAsync(imagePath)
+      const buffer = await readFileAsync(normalizedPath)
       const base64 = buffer.toString('base64')
       return `data:${mimeType};base64,${base64}`
     } catch (error) {
-      console.error('读取图片失败:', error)
+      console.error('读取图片失败 路径:', imagePath, '错误:', error)
       return null
     }
   })
