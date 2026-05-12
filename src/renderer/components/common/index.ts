@@ -10,3 +10,4 @@ export { default as AnimeForm } from './AnimeForm';
 export { default as AnimeCard } from './AnimeCard';
 export { default as HighlightText } from './HighlightText';
 export { default as UnsavedChangesBanner } from './UnsavedChangesBanner';
+export { default as AnimeImage } from './AnimeImage';
