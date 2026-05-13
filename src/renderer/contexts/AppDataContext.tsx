@@ -311,7 +311,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
       const errorMessage = error instanceof Error ? error.message : '更新动漫失败';
       return { success: false, error: errorMessage };
     }
-  }, []);
+  }, [state.animeList]);
 
   const deleteAnime = useCallback(async (id: string) => {
     try {
