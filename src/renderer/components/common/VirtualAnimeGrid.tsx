@@ -14,13 +14,28 @@ interface VirtualAnimeGridProps {
   overscan?: number;
 }
 
+const BREAKPOINTS = [
+  { minWidth: 1024, columns: 3 },
+  { minWidth: 768, columns: 2 },
+  { minWidth: 0, columns: 1 }
+];
+
+function columnsForWidth(width: number): number {
+  for (const bp of BREAKPOINTS) {
+    if (width >= bp.minWidth) {
+      return bp.columns;
+    }
+  }
+  return 1;
+}
+
 const VirtualAnimeGrid: React.FC<VirtualAnimeGridProps> = ({
   animeList,
   onSelect,
   onEdit,
   onDelete,
   className = '',
-  columns = 3,
+  columns: propColumns = 3,
   gap = 4,
   itemHeight = 400,
   overscan = 2
@@ -28,6 +43,7 @@ const VirtualAnimeGrid: React.FC<VirtualAnimeGridProps> = ({
   const gridRef = React.useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = React.useState(0);
   const [viewportHeight, setViewportHeight] = React.useState(0);
+  const [containerWidth, setContainerWidth] = React.useState(0);
 
   const handleScroll = useCallback(() => {
     if (gridRef.current) {
@@ -37,12 +53,27 @@ const VirtualAnimeGrid: React.FC<VirtualAnimeGridProps> = ({
 
   React.useEffect(() => {
     const element = gridRef.current;
-    if (element) {
-      setViewportHeight(element.clientHeight);
-      element.addEventListener('scroll', handleScroll);
-      return () => element.removeEventListener('scroll', handleScroll);
-    }
+    if (!element) return;
+
+    setViewportHeight(element.clientHeight);
+    setContainerWidth(element.clientWidth);
+
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+        setViewportHeight(entry.contentRect.height);
+      }
+    });
+    resizeObserver.observe(element);
+
+    element.addEventListener('scroll', handleScroll);
+    return () => {
+      element.removeEventListener('scroll', handleScroll);
+      resizeObserver.disconnect();
+    };
   }, [handleScroll]);
+
+  const columns = columnsForWidth(containerWidth) || propColumns;
 
   const rowHeight = itemHeight + gap;
   const totalRows = Math.ceil(animeList.length / columns);

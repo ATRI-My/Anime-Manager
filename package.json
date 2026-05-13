@@ -1,6 +1,6 @@
 {
   "name": "anime-manager",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "description": "动漫资源管理器桌面应用",
   "main": "dist/main/index.js",
   "scripts": {

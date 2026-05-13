@@ -68,10 +68,11 @@ function migrateSettings(data: any): Settings {
   }
 
   const toolConfig = migrateToolConfig((data as any).toolConfig ?? {})
+  const { virtualScrollConfig: _oldVsc, ...restData } = (data as any)
 
   return {
     ...DEFAULT_SETTINGS,
-    ...data,
+    ...restData,
     toolConfig
   }
 }

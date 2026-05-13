@@ -19,7 +19,7 @@ export const DEFAULT_VIRTUAL_SCROLL_CONFIG: VirtualScrollConfig = {
   animeGrid: {
     columns: 3,
     gap: 4,
-    itemHeight: 400,
+    itemHeight: 830,
     threshold: 20
   },
   episodeList: {
@@ -52,6 +52,6 @@ export const DEFAULT_APP_DATA: AppData = {
   animeList: []
 }
 
-export const APP_VERSION = '1.3.0'
+export const APP_VERSION = '1.4.0'
 
 export const SUPPORTED_FILE_TYPES = ['.mp4', '.mkv', '.avi', '.mov', '.wmv']

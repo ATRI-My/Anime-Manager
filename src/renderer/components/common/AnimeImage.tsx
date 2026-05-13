@@ -5,12 +5,14 @@ interface AnimeImageProps {
   imagePath?: string;
   className?: string;
   minHeight?: string;
+  maxHeight?: string;
 }
 
 const AnimeImage: React.FC<AnimeImageProps> = ({
   imagePath,
   className = '',
   minHeight = '120px',
+  maxHeight,
 }) => {
   const { isDark } = useTheme();
   const [error, setError] = useState(false);
@@ -43,7 +45,7 @@ const AnimeImage: React.FC<AnimeImageProps> = ({
   const fileUrl = `file:///${encodeURI(imagePath.replace(/\\/g, '/'))}`;
 
   return (
-    <div className={className}>
+    <div className={`${className} ${maxHeight ? 'overflow-hidden' : ''}`} style={maxHeight ? { maxHeight } : undefined}>
       {!loaded && (
         <div
           className={`flex items-center justify-center ${isDark ? 'bg-neutral-700' : 'bg-gray-100'}`}

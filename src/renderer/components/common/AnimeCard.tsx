@@ -75,6 +75,7 @@ const AnimeCard: React.FC<AnimeCardProps> = ({
         imagePath={anime.imagePath}
         className=""
         minHeight="160px"
+        maxHeight="560px"
       />
       <div className="p-6">
         <div className="flex justify-between items-start mb-4">
